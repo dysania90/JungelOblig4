@@ -196,6 +196,32 @@
         dirtroadMesh.name = "dirtroad";
         scene.add(dirtroadMesh);
 
+
+        var randomPoints = [];
+
+        for(var i = 0; i < 100; i++) {
+            randomPoints.push(new THREE.Vector3(Math.random() * 4000 - 2000, Math.random()
+                    * 4000 - 2000, Math.random() * 4000 - 2000));
+        }
+
+/*        var curve = new THREE.Line(randomPoints, material);*/
+
+        /*var path = new THREE.Path(curve.getPoints(50));*/
+
+        var path = new THREE.CircleGeometry(2, 50);
+        /*var geometry = path.createPointsGeometry(50);*/
+        var material = new THREE.LineBasicMaterial( {color: 0xff0000} );
+
+        var curve = new THREE.SplineCurve3(randomPoints);
+        var splineObject = new THREE.Line(path, material);
+
+        scene.add(splineObject);
+
+        scene.add(curve);
+
+        splineObject.rotateX(135);
+        splineObject.scale.set(500, 500, 500);
+        splineObject.position.set(1000,1700,1000);
         //
         // Some other updates
         //
