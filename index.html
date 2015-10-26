@@ -185,43 +185,103 @@
         // We scale the geometry to avoid scaling the node, since scales propagate.
         heightMapGeometry.scale(50*worldWidth, 1000, 50*worldDepth);
 
-        var dirtroadGeometry = new HeightMapBufferGeometry(terrainData, worldWidth, worldDepth);
-        dirtroadGeometry.scale(40*worldWidth, 1000, 40*worldDepth);
+/*        var dirtroadGeometry = new HeightMapBufferGeometry(terrainData, worldWidth, worldDepth);
+        dirtroadGeometry.scale(40*worldWidth, 1000, 40*worldDepth);*/
 
         terrainMesh = new HeightMapMesh( heightMapGeometry, new THREE.MeshBasicMaterial( { map: groundtexture } ) );
         terrainMesh.name = "terrain";
         scene.add( terrainMesh );
 
-        dirtroadMesh = new HeightMapMesh( dirtroadGeometry, new THREE.MeshBasicMaterial( { map: dirtroadtexture } ) );
+/*        dirtroadMesh = new HeightMapMesh( dirtroadGeometry, new THREE.MeshBasicMaterial( { map: dirtroadtexture } ) );
         dirtroadMesh.name = "dirtroad";
-        scene.add(dirtroadMesh);
+        scene.add(dirtroadMesh);*/
 
 
+        /*Sirkelformet spline-kurve*/
+        var path = new THREE.CircleGeometry(2, 50);
+
+        var circleMaterial = new THREE.LineBasicMaterial( {color: 0xff0000} );
+
+        var circleSplineObject = new THREE.Line(path, circleMaterial);
+
+        scene.add(circleSplineObject);
+
+        circleSplineObject.rotateX(45);
+        circleSplineObject.scale.set(500, 500, 500);
+        circleSplineObject.position.set(1000,1700,1000);
+        /* */
+
+
+        /*Irregulaert formet spline-kurve*/
         var randomPoints = [];
 
-        for(var i = 0; i < 100; i++) {
-            randomPoints.push(new THREE.Vector3(Math.random() * 4000 - 2000, Math.random()
-                    * 4000 - 2000, Math.random() * 4000 - 2000));
+        /*
+        var num = 10;
+
+        for(var i = 0; i < num; i++) {
+            randomPoints.push(new THREE.Vector3(Math.random() * 4000 - 1500, Math.random()
+                    * 3000 - 1500, Math.random() * 3000 - 1500));
         }
 
-/*        var curve = new THREE.Line(randomPoints, material);*/
+        for(var i = 0; i < num; i++) {
+            randomPoints[i].y = terrainMesh.getHeightAtPoint(randomPoints[i]) + 1;
+        }
 
-        /*var path = new THREE.Path(curve.getPoints(50));*/
+        var negate = -2;
+         */
 
-        var path = new THREE.CircleGeometry(2, 50);
-        /*var geometry = path.createPointsGeometry(50);*/
-        var material = new THREE.LineBasicMaterial( {color: 0xff0000} );
+        var count = 1000;
+        /*
+        for(var i = 0; i < count; i++) {
+            randomPoints.push(new THREE.Vector3(-count+(i*2), 1000, count-(i*7)));
+        }*/
+        randomPoints.push(
+                new THREE.Vector3(-1000, 1000, 1000),
+                new THREE.Vector3(-800, 1000, 900),
+                new THREE.Vector3(-400, 1000, 800),
+                new THREE.Vector3(200, 1000, 700),
+                new THREE.Vector3(400, 1000, 400),
+                new THREE.Vector3(600, 1000, -200),
+                new THREE.Vector3(500, 1000, -600),
+                new THREE.Vector3(900, 1000, - 1400),
+                new THREE.Vector3(1300, 1000, -1400),
+                new THREE.Vector3(1600, 1000, -1000),
+        new THREE.Vector3(1600, 1000, -900),
+        new THREE.Vector3(1500, 1000, -800),
+        new THREE.Vector3(1300, 1000, -700),
+        new THREE.Vector3(900, 1000, -700)
+        );
 
-        var curve = new THREE.SplineCurve3(randomPoints);
-        var splineObject = new THREE.Line(path, material);
+        for(var i = 0; i < 14; i++) {
+            randomPoints[i].y = terrainMesh.getHeightAtPoint(randomPoints[i]);
 
-        scene.add(splineObject);
+           /* if(randomPoints[i].y < terrainMesh.getHeightAtPoint(randomPoints[i])) {
+             randomPoints[i].y += 10;
+             }*/
+        }
 
-        scene.add(curve);
 
-        splineObject.rotateX(135);
-        splineObject.scale.set(500, 500, 500);
-        splineObject.position.set(1000,1700,1000);
+
+        var splineCurve = new THREE.CatmullRomCurve3(randomPoints);
+
+        var geometry = new THREE.Geometry();
+        geometry.vertices = splineCurve.getPoints(2000);
+
+/*
+        for(var i = 0; i < 1000; i++) {
+            geometry.vertices[i].y = terrainMesh.getHeightAtPoint(geometry.vertices[i]);
+        }
+*/
+
+        var irregularMaterial = new THREE.LineBasicMaterial( {color: 0x0000ff} );
+
+        var splineCurveObject = new THREE.Line(geometry, irregularMaterial);
+        scene.add(splineCurveObject);
+
+        splineCurveObject.position.set(1000,100,1000);
+
+        /* */
+
         //
         // Some other updates
         //
