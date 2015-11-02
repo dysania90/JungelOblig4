@@ -35,7 +35,10 @@
 <div id="container"><br /><br /><br /><br /><br />Generating world...</div>
 <div id="info"><a href="http://threejs.org" target="_blank">three.js</a> - webgl terrain demo<br />(left click: forward, right click: backward)</div>
 
+<script src="bower_components/three.js/build/three.min.js"></script>
 <script src="bower_components/three.js/build/three.js"></script>
+<script src="bower_components/three.js/examples/js/loaders/OBJLoader.js"></script>
+
 
 <script src="bower_components/three.js/examples/js/loaders/DDSLoader.js"></script>
 <script src="bower_components/three.js/examples/js/loaders/MTLLoader.js"></script>
@@ -49,6 +52,7 @@
 
 <script src="src/HeightMapGeometry.js"></script>
 <script src="src/HeightMapMesh.js"></script>
+
 
 <script id="instanced-vshader" type="x-shader/x-vertex">
 		// Other attributes and uniforms are supposed to be filled in by Three.js
@@ -100,19 +104,25 @@
 
     var camera, controls, scene, renderer;
 
-    var terrainData, terrainMesh, terrainTexture, dirtroadMesh;
+    var terrainData, terrainMesh, terrainTexture, dirtroadMesh, waterMesh, waterData;
 
     /*Ground texture*/
     var groundtexture = THREE.ImageUtils.loadTexture( "textures/junglefloortexture.jpg" );
     groundtexture.wrapS = THREE.RepeatWrapping;
     groundtexture.wrapT = THREE.RepeatWrapping;
-    groundtexture.repeat.set( 64, 64 );
+    groundtexture.repeat.set( 256, 256 );
 
     /*Dirt road texture*/
     var dirtroadtexture = THREE.ImageUtils.loadTexture("textures/dirtroadtexture.jpg");
     dirtroadtexture.wrapS = THREE.RepeatWrapping;
     dirtroadtexture.wrapT = THREE.RepeatWrapping;
     dirtroadtexture.repeat.set( 64, 64 );
+
+    /*Water texture*/
+    var watertexture = THREE.ImageUtils.loadTexture("textures/watertexture.jpg");
+    watertexture.wrapS = THREE.RepeatWrapping;
+    watertexture.wrapT = THREE.RepeatWrapping;
+    watertexture.repeat.set( 64, 64 );
 
     var worldWidth = 512, worldDepth = 512,
             worldHalfWidth = worldWidth / 2, worldHalfDepth = worldDepth / 2;
@@ -147,13 +157,13 @@
         ambientLight.name = 'ambientLight';
         scene.add(ambientLight);
 
-        var directionalLight = new THREE.DirectionalLight(0xffffff);
+        var directionalLight = new THREE.DirectionalLight(0xf5a914, 2.0); //colour of the sun
         directionalLight.name = 'sun';
-        directionalLight.position.set(1, 1, 0).normalize();
+        directionalLight.position.set(10000, 5000, 10000);
         //directionalLight.rotateZ(45 *Math.PI/180);
         scene.add(directionalLight);
 
-        scene.add(new THREE.DirectionalLightHelper(directionalLight, 10));
+        scene.add(new THREE.DirectionalLightHelper(directionalLight, 100));
 
         //
         // Height map generation/extraction
@@ -171,6 +181,8 @@
             worldHalfWidth = Math.floor(worldWidth / 2);
             worldHalfDepth = Math.floor(worldDepth / 2);
         }
+        var waterMapImage = document.getElementById('watermap');
+        waterData = getPixelValues(waterMapImage, 'r');
 
         // Not required to use the generated texture
         terrainTexture = new THREE.CanvasTexture( generateTexture( terrainData, worldWidth, worldDepth ) );
@@ -188,13 +200,113 @@
         var dirtroadGeometry = new HeightMapBufferGeometry(terrainData, worldWidth, worldDepth);
         dirtroadGeometry.scale(40*worldWidth, 1000, 40*worldDepth);
 
-        terrainMesh = new HeightMapMesh( heightMapGeometry, new THREE.MeshBasicMaterial( { map: groundtexture } ) );
+
+        terrainMesh = new HeightMapMesh( heightMapGeometry, new THREE.MeshLambertMaterial( { map: groundtexture } ) );
         terrainMesh.name = "terrain";
+
         scene.add( terrainMesh );
 
-        dirtroadMesh = new HeightMapMesh( dirtroadGeometry, new THREE.MeshBasicMaterial( { map: dirtroadtexture } ) );
+        var waterGeometry = new HeightMapBufferGeometry(waterData, worldWidth, worldDepth);
+        waterGeometry.scale(50*worldWidth, 1000, 50*worldDepth);
+
+        waterMesh = new HeightMapMesh(waterGeometry, new THREE.MeshLambertMaterial({ map: watertexture}));
+        waterMesh.name = "water";
+
+        scene.add(waterMesh);
+        waterMesh.position.y -= 976;
+        var waterLevel = waterMesh.position.y + 976;
+/*        for(var i = 0; i <terrainData.length; i++) {
+            if(terrainData[])
+        }*/
+/*        dirtroadMesh = new HeightMapMesh( dirtroadGeometry, new THREE.MeshBasicMaterial( { map: dirtroadtexture } ) );
         dirtroadMesh.name = "dirtroad";
-        scene.add(dirtroadMesh);
+        scene.add(dirtroadMesh);*/
+
+
+        /*Sirkelformet spline-kurve*/
+        var path = new THREE.CircleGeometry(2, 50);
+
+        var circleMaterial = new THREE.LineBasicMaterial( {color: 0xff0000} );
+
+        var circleSplineObject = new THREE.Line(path, circleMaterial);
+
+        scene.add(circleSplineObject);
+
+        circleSplineObject.rotateX(45);
+        circleSplineObject.scale.set(500, 500, 500);
+        circleSplineObject.position.set(1000,1700,1000);
+        /* */
+
+
+        /*Irregulaert formet spline-kurve*/
+        var randomPoints = [];
+
+        /*
+        var num = 10;
+
+        for(var i = 0; i < num; i++) {
+            randomPoints.push(new THREE.Vector3(Math.random() * 4000 - 1500, Math.random()
+                    * 3000 - 1500, Math.random() * 3000 - 1500));
+        }
+
+        for(var i = 0; i < num; i++) {
+            randomPoints[i].y = terrainMesh.getHeightAtPoint(randomPoints[i]) + 1;
+        }
+
+        var negate = -2;
+         */
+
+        var count = 1000;
+        /*
+        for(var i = 0; i < count; i++) {
+            randomPoints.push(new THREE.Vector3(-count+(i*2), 1000, count-(i*7)));
+        }*/
+        randomPoints.push(
+                new THREE.Vector3(-1000, 1000, 1000),
+                new THREE.Vector3(-800, 1000, 900),
+                new THREE.Vector3(-400, 1000, 800),
+                new THREE.Vector3(200, 1000, 700),
+                new THREE.Vector3(400, 1000, 400),
+                new THREE.Vector3(600, 1000, -200),
+                new THREE.Vector3(500, 1000, -600),
+                new THREE.Vector3(900, 1000, - 1400),
+                new THREE.Vector3(1300, 1000, -1400),
+                new THREE.Vector3(1600, 1000, -1000),
+        new THREE.Vector3(1600, 1000, -900),
+        new THREE.Vector3(1500, 1000, -800),
+        new THREE.Vector3(1300, 1000, -700),
+        new THREE.Vector3(900, 1000, -700)
+        );
+
+        for(var i = 0; i < 14; i++) {
+            randomPoints[i].y = terrainMesh.getHeightAtPoint(randomPoints[i]);
+
+           /* if(randomPoints[i].y < terrainMesh.getHeightAtPoint(randomPoints[i])) {
+             randomPoints[i].y += 10;
+             }*/
+        }
+
+
+
+        var splineCurve = new THREE.CatmullRomCurve3(randomPoints);
+
+        var geometry = new THREE.Geometry();
+        geometry.vertices = splineCurve.getPoints(2000);
+
+/*
+        for(var i = 0; i < 1000; i++) {
+            geometry.vertices[i].y = terrainMesh.getHeightAtPoint(geometry.vertices[i]);
+        }
+*/
+
+        var irregularMaterial = new THREE.LineBasicMaterial( {color: 0x0000ff} );
+
+        var splineCurveObject = new THREE.Line(geometry, irregularMaterial);
+        scene.add(splineCurveObject);
+
+        splineCurveObject.position.set(1000,100,1000);
+
+        /* */
 
         //
         // Some other updates
@@ -215,13 +327,12 @@
 
         // There are several other model loaders for other types, just look in Three.js' example folder.
         var objectMaterialLoader = new THREE.OBJMTLLoader();
-
-        objectMaterialLoader.load(
-                'models/lowPolyTree/lowpolytree.obj',
-                'models/lowPolyTree/lowpolytree.mtl',
+        /*objectMaterialLoader.load(
+                'resources/mesh/samples/terrain/tree/palm_tree/palm_straight.obj',
+                'resources/textures/samples/terrain/tree/palm_tree/palm_tree.mtl',
                 function setUpLowPolyTree( object ) {
                     // Custom function to handle what's supposed to happen once we've loaded the model
-                    object.scale.set(100, 100, 100);
+                    object.scale.set(1, 1, 1);
 
                     var bbox = new THREE.Box3().setFromObject(object);
 
@@ -231,35 +342,13 @@
                     // We should know where the bottom of our object is
                     object.position.y -= bbox.min.y;
 
-                    object.name = "LowPolyTree";
+                    object.name = "Palm";
 
                     terrainMesh.add( object );
-                }, onProgress, onError );
+                }, onProgress, onError );*/
 
-        objectMaterialLoader.load(
-                'models/rocks/rock1/Rock1.obj',
-                'models/rocks/rock1/Rock1.mtl',
-                function setUpRock( object ) {
-                    // Custom function to handle what's supposed to happen once we've loaded the model
 
-                    // Sometimes models contain uninteresting parts, extract meaningfull parts.
-                    var interestingObject = object.children[1].children[1];
-                    interestingObject.scale.set(100, 100, 100);
 
-                    var bbox = new THREE.Box3().setFromObject(interestingObject);
-
-                    interestingObject.position.set(200, 0, 200);
-                    interestingObject.position.y = terrainMesh.getHeightAtPoint(object.position);
-
-                    interestingObject.position.y -= bbox.min.y;
-
-                    interestingObject.name = "rock1";
-                    //interestingObject.material.map = THREE.ImageUtils.loadTexture('models/rocks/rock1/Rock-Texture-Surface.jpg');
-                    interestingObject.material.map = null;
-                    interestingObject.material.color = new THREE.Color(0.1, 0.1, 0.1);
-
-                    terrainMesh.add( interestingObject );
-                }, onProgress, onError );
 
         //
         // Generate random positions for some number of boxes
@@ -286,6 +375,167 @@
             pos.toArray(translationArray, i3);
         }
 
+        /*for(var i = 0; i < numBoxes; i++) {
+
+                objectMaterialLoader.load(
+                        'models/lowPolyTree/lowpolytree.obj',
+                        'models/lowPolyTree/lowpolytree.mtl',
+                        function setUpLowPolyTree( object ) {
+                            // Custom function to handle what's supposed to happen once we've loaded the model
+                            object.scale.set(100, 100, 100);
+
+                            var bbox = new THREE.Box3().setFromObject(object);
+                            var randx = radius * (2*Math.random() - 1);
+                            var randy = radius * (2*Math.random() - 1);
+                            var randz = radius * (2*Math.random() - 1);
+
+                            object.position.set(randx, randy, randz);
+                            object.position.y = terrainMesh.getHeightAtPoint(object.position);
+
+                            // We should know where the bottom of our object is
+                            object.position.y -= bbox.min.y;
+
+                            object.name = "LowPolyTree";
+
+                            if(object.position.y > 325 ) {
+                                terrainMesh.add(object);
+                            }
+                        }, onProgress, onError );
+
+        }*/
+
+        var texture = new THREE.Texture();
+        var texture2 = new THREE.Texture();
+
+        var manager = new THREE.LoadingManager();
+        manager.onProgress = function ( item, loaded, total ) {
+
+            console.log( item, loaded, total );
+
+        };
+
+        var loader = new THREE.ImageLoader( manager );
+        loader.load( 'resources/textures/samples/terrain/tree/palm_tree/diffuse.png', function ( image ) {
+
+            texture.image = image;
+            texture.needsUpdate = true;
+
+        } );
+
+        var objectLoader = new THREE.OBJLoader( manager );
+
+        var models = ['models/palmTrees/palm_straight.obj', 'models/palmTrees/palm_bend.obj',
+            'models/palmTrees/palm_dual.obj', 'models/palmTrees/palm_trio.obj',
+            'resources/mesh/samples/terrain/plants/tropical_plant2/tropical_plant.obj' ];
+
+        var j = 0;
+        for(var i = 0; i < numBoxes; i++) {
+
+            if(j === 4) {
+                j = 0;
+            }
+            objectLoader.load( models[j], function ( object ) {
+
+                object.traverse( function ( child ) {
+
+                    if ( child instanceof THREE.Mesh ) {
+
+                        child.material.map = texture;
+
+                    }
+
+                } );
+
+                var bbox = new THREE.Box3().setFromObject(object);
+                var randx = radius * (2*Math.random() - 1);
+                var randy = radius * (2*Math.random() - 1);
+                var randz = radius * (2*Math.random() - 1);
+
+                object.position.set(randx, randy, randz);
+                object.position.y = terrainMesh.getHeightAtPoint(object.position);
+                /*object.position.y -= bbox.min.y;*/
+
+                object.name = "Palm";
+
+                if(object.position.y > (waterLevel + 70)) {
+                    terrainMesh.add(object);
+                }
+
+
+            }, onProgress, onError );
+            j++;
+        }
+
+
+
+        loader.load( 'resources/textures/samples/terrain/plants/tropical_plant2/diffuse.png', function ( image ) {
+
+            texture2.image = image;
+            texture2.needsUpdate = true;
+
+        } );
+
+        for(var i = 0; i < numBoxes; i++) {
+
+            objectLoader.load( models[4], function ( object ) {
+
+                object.traverse( function ( child ) {
+
+                    if ( child instanceof THREE.Mesh ) {
+
+                        child.material.map = texture2;
+
+                    }
+
+                } );
+
+                var bbox = new THREE.Box3().setFromObject(object);
+                var randx = radius * (2*Math.random() - 1);
+                var randy = radius * (2*Math.random() - 1);
+                var randz = radius * (2*Math.random() - 1);
+
+                object.position.set(randx, randy, randz);
+                object.position.y = terrainMesh.getHeightAtPoint(object.position);
+                /*object.position.y -= bbox.min.y;*/
+
+                object.name = "Tropical plant";
+
+                if(object.position.y > (waterLevel + 70)) {
+                    terrainMesh.add(object);
+                }
+
+
+            }, onProgress, onError );
+            j++;
+        }
+
+
+        objectMaterialLoader.load(
+                'models/rocks/rock1/Rock1.obj',
+                'models/rocks/rock1/Rock1.mtl',
+                function setUpRock( object ) {
+                    // Custom function to handle what's supposed to happen once we've loaded the model
+
+                    // Sometimes models contain uninteresting parts, extract meaningfull parts.
+                    var interestingObject = object.children[1].children[1];
+                    interestingObject.scale.set(100, 100, 100);
+
+                    var bbox = new THREE.Box3().setFromObject(interestingObject);
+
+                    interestingObject.position.set(200, 0, 200);
+                    interestingObject.position.y = terrainMesh.getHeightAtPoint(object.position);
+
+                    interestingObject.position.y -= bbox.min.y;
+
+                    interestingObject.name = "rock1";
+                    //interestingObject.material.map = THREE.ImageUtils.loadTexture('models/rocks/rock1/Rock-Texture-Surface.jpg');
+                    interestingObject.material.map = null;
+                    interestingObject.material.color = new THREE.Color(0.1, 0.1, 0.1);
+
+
+                    terrainMesh.add( interestingObject );
+                }, onProgress, onError );
+
         // Lots of other possibilities, eg: custom color per object, objects changing (requires dynamic
         // InstancedBufferAttribute, see its setDynamic), but require more shader magic.
         instancedBoxGeom.addAttribute( "translate", new THREE.InstancedBufferAttribute(translationArray, 3, 1) );
@@ -301,7 +551,7 @@
         var instancedBox = new THREE.Mesh(instancedBoxGeom, instancedMaterial);
         instancedBox.name = "instancedBox";
 
-        terrainMesh.add(instancedBox);
+        //terrainMesh.add(instancedBox);
 
         //
         // Set up renderer
@@ -538,6 +788,8 @@
 <img src="textures/heightmap.jpeg" id="heightmap" hidden/>
 <img src="textures/junglefloortexture.jpg" id="groundtexture" hidden/>
 <img src="textures/dirtroadtexture.jpg" id="dirtroadtexture" hidden/>
+<img src="textures/watertexture.jpg" id="watertexture" hidden/>
+<img src="textures/watermap.jpg" id="watermap" hidden/>
 
 </body>
 </html>
