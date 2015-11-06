@@ -1,71 +1,9 @@
 /**
  * Created by Kristoffer on 03/11/2015.
  */
+GenerateMap = {}
 
-var worldWidth = 512, worldDepth = 512,
-    worldHalfWidth = worldWidth / 2, worldHalfDepth = worldDepth / 2;
-
-//
-// Height map generation/extraction
-//
-
-function generateMap () {
-
-var useRandomHeightMap = false;
-
-if (useRandomHeightMap) {
-    terrainData = generateHeight( worldWidth, worldDepth );
-} else {
-    var heightMapImage = document.getElementById('heightmap');
-    terrainData = getPixelValues(heightMapImage, 'r');
-    worldWidth = heightMapImage.width;
-    worldDepth = heightMapImage.height;
-    worldHalfWidth = Math.floor(worldWidth / 2);
-    worldHalfDepth = Math.floor(worldDepth / 2);
-}
-var waterMapImage = document.getElementById('watermap');
-waterData = getPixelValues(waterMapImage, 'r');
-
-// Not required to use the generated texture
-terrainTexture = new THREE.CanvasTexture( generateTexture( terrainData, worldWidth, worldDepth ) );
-terrainTexture.wrapS = THREE.ClampToEdgeWrapping;
-terrainTexture.wrapT = THREE.ClampToEdgeWrapping;
-
-//
-// Generate terrain geometry and mesh
-
-
-var heightMapGeometry = new HeightMapBufferGeometry(terrainData, worldWidth, worldDepth);
-// We scale the geometry to avoid scaling the node, since scales propagate.
-heightMapGeometry.scale(50*worldWidth, 1000, 50*worldDepth);
-
-var dirtroadGeometry = new HeightMapBufferGeometry(terrainData, worldWidth, worldDepth);
-dirtroadGeometry.scale(40*worldWidth, 1000, 40*worldDepth);
-
-
-terrainMesh = new HeightMapMesh( heightMapGeometry, new THREE.MeshLambertMaterial( { map: groundtexture } ) );
-terrainMesh.name = "terrain";
-
-scene.add( terrainMesh );
-
-var waterGeometry = new HeightMapBufferGeometry(waterData, worldWidth, worldDepth);
-waterGeometry.scale(50*worldWidth, 1000, 50*worldDepth);
-
-waterMesh = new HeightMapMesh(waterGeometry, new THREE.MeshLambertMaterial({ map: watertexture}));
-waterMesh.name = "water";
-
-waterMesh.position.y -= 976;
-var waterLevel = waterMesh.position.y + 976;
-/*        for(var i = 0; i <terrainData.length; i++) {
- if(terrainData[])
- }*/
-/*        dirtroadMesh = new HeightMapMesh( dirtroadGeometry, new THREE.MeshBasicMaterial( { map: dirtroadtexture } ) );
- dirtroadMesh.name = "dirtroad";
- scene.add(dirtroadMesh);*/
-
-}
-
-function generateHeight( width, height ) {
+GenerateMap.generateHeight = function ( width, height ) {
 
     var size = width * height, data = new Uint8Array( size ),
         perlin = new ImprovedNoise(), quality = 1, z = Math.random() * 100;
@@ -87,7 +25,14 @@ function generateHeight( width, height ) {
 
 }
 
-function getPixelValues(domImage, pixelComponents) {
+/**
+ * Extract pixel values from image elements. Not guaranteed to contain exactly the same values as
+ * the image file.
+ * @param {HTMLImageElement} domImage an image.
+ * @param {string} [pixelComponents='rgba'] the color components to extract
+ * @returns {array|Uint8ClampedArray} a color array
+ */
+GenerateMap.getPixelValues = function (domImage, pixelComponents) {
     "use strict";
     var canvas = document.createElement('canvas');
     canvas.width = domImage.width;
@@ -133,3 +78,29 @@ function getPixelValues(domImage, pixelComponents) {
     return pixelData;
 }
 
+/**
+ * @param {Number} count number of positions
+ * @param {THREE.Vector3} center where the position be centered about
+ * @param {Number} radius the max area
+ */
+GenerateMap.generateRandomPositions = function (count, center, radius) {
+    var translationArray = new Float32Array(3 * count);
+
+    var pos = new THREE.Vector3();
+    for (var i = 0, i3 = 0; i < count; i++, i3 +=3) {
+        // One method to generate random positions
+        // TODO: make gauss distributed method, f.ex
+        pos.x = radius * (2*Math.random() - 1);
+        pos.y = radius * (2*Math.random() - 1);
+        pos.z = radius * (2*Math.random() - 1);
+
+        pos.add(center);
+        //translationArray[i3 + 0] = pos.x;
+        //translationArray[i3 + 1] = pos.y;
+        //translationArray[i3 + 2] = pos.z;
+
+        pos.toArray(translationArray, i3);
+    }
+
+    return translationArray;
+}
