@@ -174,7 +174,7 @@
 
         var heightMapGeometry = new HeightMapBufferGeometry(terrainData, worldWidth, worldDepth);
         // We scale the geometry to avoid scaling the node, since scales propagate.
-        heightMapGeometry.scale(50*worldWidth, 1000, 50*worldDepth);
+        heightMapGeometry.scale(50*worldWidth, 4500, 50*worldDepth);
 
         var dirtroadGeometry = new HeightMapBufferGeometry(terrainData, worldWidth, worldDepth);
         dirtroadGeometry.scale(40*worldWidth, 1000, 40*worldDepth);
@@ -183,6 +183,9 @@
         terrainMesh = new HeightMapMesh( heightMapGeometry, new THREE.MeshLambertMaterial( { map: groundtexture } ) );
         terrainMesh.name = "terrain";
 
+        terrainMesh.castShadow = true;
+        terrainMesh.receiveShadows = true;
+
         scene.add( terrainMesh );
 
         var waterGeometry = new HeightMapBufferGeometry(waterData, worldWidth, worldDepth);
@@ -190,6 +193,8 @@
 
         waterMesh = new HeightMapMesh(waterGeometry, new THREE.MeshLambertMaterial({ map: watertexture}));
         waterMesh.name = "water";
+
+        waterMesh.recieveShadows = true;
 
         scene.add(waterMesh);
         waterMesh.position.y -= 976;
@@ -273,6 +278,13 @@
         // What updates, when does these updates end??
         //
 
+
+        //Old camera position, approximately on the middle of the map.
+/*        camera.position.y = terrainMesh.getHeightAtPoint(camera.position) + 500;*/
+
+        //New camera position, on the "southern" side of the map
+        camera.position.x = -10000;
+        camera.position.z = 3000;
         camera.position.y = terrainMesh.getHeightAtPoint(camera.position) + 500;
 
         var boxGeom = new THREE.BoxGeometry(100, 100, 100);
@@ -467,7 +479,7 @@
 
 </script>
 
-<img src="textures/heightmap.jpeg" id="heightmap" hidden/>
+<img src="textures/heightmapIsland4.jpeg" id="heightmap" hidden/>
 <img src="textures/junglefloortexture.jpg" id="groundtexture" hidden/>
 <img src="textures/dirtroadtexture.jpg" id="dirtroadtexture" hidden/>
 <img src="textures/watertexture.jpg" id="watertexture" hidden/>
