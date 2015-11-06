@@ -1,4 +1,3 @@
-
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -15,7 +14,6 @@
 <script src="bower_components/three.js/build/three.min.js"></script>
 <script src="bower_components/three.js/build/three.js"></script>
 <script src="bower_components/three.js/examples/js/loaders/OBJLoader.js"></script>
-
 
 <script src="bower_components/three.js/examples/js/loaders/DDSLoader.js"></script>
 <script src="bower_components/three.js/examples/js/loaders/MTLLoader.js"></script>
@@ -43,7 +41,6 @@
         // we're going to draw a slightly different one.
 		attribute vec3 translate;
 
-
 		varying vec2 vUv;
 
 		void main() {
@@ -56,7 +53,7 @@
 
 		}
 
-	</script>
+</script>
 
 <script id="fshader" type="x-shader/x-fragment">
         // Other attributes and uniforms are supposed to be filled in by Three.js
@@ -69,24 +66,23 @@
 			gl_FragColor = vec4(color, 1.0);
 
 		}
-	</script>
+</script>
 
 <script>
-
+    // What is this, do we need it?
     if ( ! Detector.webgl ) {
-
         Detector.addGetWebGLMessage();
         document.getElementById( 'container' ).innerHTML = "";
-
     }
-
 
     var container, stats;
 
     var camera, controls, scene, renderer;
 
+    // Probably GenerateMap
     var terrainData, terrainMesh, terrainTexture, dirtroadMesh, waterMesh, waterData;
 
+    // WAAAAAY too many var stuff here. Move it where it belongs (GenerateTexture for the most part)
     /*Ground texture*/
     var groundtexture = THREE.ImageUtils.loadTexture( "textures/junglefloortexture.jpg" );
     groundtexture.wrapS = THREE.RepeatWrapping;
@@ -134,6 +130,7 @@
         /////////////////////////////////////////////////////
 
         // Needed for materials using phong shading
+        // This needs to be done differently
         var ambientLight = new THREE.AmbientLight(0xffffff);
         ambientLight.name = 'ambientLight';
         scene.add(ambientLight);
@@ -145,6 +142,7 @@
 
         //
         // Height map generation/extraction
+        // Needs to move to GenerateMap
         //
 
         var useRandomHeightMap = false;
@@ -163,12 +161,15 @@
         waterData = GenerateMap.getPixelValues(waterMapImage, 'r');
 
         // Not required to use the generated texture
-        terrainTexture = new THREE.CanvasTexture( generateTexture( terrainData, worldWidth, worldDepth ) );
+        // Where do we generate textures? Seems to be spread out. Needs to clump it together and
+        // move to own file (GenerateTexture)
+        terrainTexture = new THREE.CanvasTexture( GenerateTexture.generateTexture( terrainData, worldWidth, worldDepth ) );
         terrainTexture.wrapS = THREE.ClampToEdgeWrapping;
         terrainTexture.wrapT = THREE.ClampToEdgeWrapping;
 
         //
         // Generate terrain geometry and mesh
+        // This need to move to GenerateMap
         //
 
         var heightMapGeometry = new HeightMapBufferGeometry(terrainData, worldWidth, worldDepth);
@@ -201,6 +202,7 @@
         scene.add(dirtroadMesh);*/
 
         /*Irregulaert formet spline-kurve*/
+        // Move this to MovementAndCamera and make it work!
         var randomPoints = [];
 
         /*
@@ -248,18 +250,14 @@
              }*/
         }
 
-
-
         var splineCurve = new THREE.CatmullRomCurve3(randomPoints);
 
         var geometry = new THREE.Geometry();
         geometry.vertices = splineCurve.getPoints(2000);
 
-/*
-        for(var i = 0; i < 1000; i++) {
+        /*  for(var i = 0; i < 1000; i++) {
             geometry.vertices[i].y = terrainMesh.getHeightAtPoint(geometry.vertices[i]);
-        }
-*/
+        }   */
 
         var irregularMaterial = new THREE.LineBasicMaterial( {color: 0x0000ff} );
 
@@ -268,10 +266,11 @@
 
         splineCurveObject.position.set(1000,100,1000);
 
-        /* */
+        // End move to MovementAndCamera
 
         //
         // Some other updates
+        // What updates, when does these updates end??
         //
 
         camera.position.y = terrainMesh.getHeightAtPoint(camera.position) + 500;
@@ -294,38 +293,26 @@
         // Copy geometry from a standard box.
         instancedBoxGeom.fromGeometry(new THREE.BoxGeometry(100, 100, 100));
 
-        var numBoxes = 1000;
+        var numBoxes = 10;
         var center = new THREE.Vector3(0,0,0);
         var radius = 50 * worldHalfWidth;
-
-        var translationArray = GenerateMap.generateRandomPositions(numBoxes, center, radius);
-
-        for (var i = 0, i3 = 0; i < numBoxes; ++i, i3 += 3) {
-            // Correct height positions
-            var pos = new THREE.Vector3().fromArray(translationArray, i3);
-            pos.y = terrainMesh.getHeightAtPoint(pos);
-            pos.toArray(translationArray, i3);
-        }
 
         var texture = new THREE.Texture();
         var texture2 = new THREE.Texture();
 
+        // Guessing the start of generating objects is here, make a function and move it
         var manager = new THREE.LoadingManager();
         manager.onProgress = function ( item, loaded, total ) {
 
             console.log( item, loaded, total );
-
         };
 
         var loader = new THREE.ImageLoader( manager );
         loader.load( 'resources/textures/samples/terrain/tree/palm_tree/diffuse.png', function ( image ) {
-
             texture.image = image;
             texture.needsUpdate = true;
-
         } );
 
-        //en kommentar
         var objectLoader = new THREE.OBJLoader( manager );
 
         var models = ['models/palmTrees/palm_straight.obj', 'models/palmTrees/palm_bend.obj',
@@ -370,8 +357,6 @@
             j++;
         }
 
-
-
         loader.load( 'resources/textures/samples/terrain/plants/tropical_plant2/diffuse.png', function ( image ) {
 
             texture2.image = image;
@@ -413,10 +398,6 @@
             j++;
         }
 
-        // Lots of other possibilities, eg: custom color per object, objects changing (requires dynamic
-        // InstancedBufferAttribute, see its setDynamic), but require more shader magic.
-        instancedBoxGeom.addAttribute( "translate", new THREE.InstancedBufferAttribute(translationArray, 3, 1) );
-
         var instancedMaterial = new THREE.ShaderMaterial( {
             uniforms: {
                 color: { type: "c" , value: new THREE.Color(Math.random(), Math.random(), Math.random()) }
@@ -432,6 +413,7 @@
 
         //
         // Set up renderer
+        // Seen this done better, cleaner. We need to do this
         //
 
         renderer = new THREE.WebGLRenderer();
@@ -448,107 +430,32 @@
         stats.domElement.style.top = '0px';
         container.appendChild( stats.domElement );
 
-        //
-
         window.addEventListener( 'resize', onWindowResize, false );
 
     }
 
     function onWindowResize() {
-
         camera.aspect = window.innerWidth / window.innerHeight;
         camera.updateProjectionMatrix();
-
         renderer.setSize( window.innerWidth, window.innerHeight );
-
         controls.handleResize();
-
     }
 
-    function generateTexture( data, width, height ) {
-
-        var canvas, canvasScaled, context, image, imageData,
-                level, diff, vector3, sun, shade;
-
-        vector3 = new THREE.Vector3( 0, 0, 0 );
-
-        sun = new THREE.Vector3( 1, 1, 1 );
-        sun.normalize();
-
-        canvas = document.createElement( 'canvas' );
-        canvas.width = width;
-        canvas.height = height;
-
-        context = canvas.getContext( '2d' );
-        context.fillStyle = '#000';
-        context.fillRect( 0, 0, width, height );
-
-        image = context.getImageData( 0, 0, canvas.width, canvas.height );
-        imageData = image.data;
-
-        for ( var i = 0, j = 0, l = imageData.length; i < l; i += 4, j ++ ) {
-
-            vector3.x = data[ j - 2 ] - data[ j + 2 ];
-            vector3.y = 2;
-            vector3.z = data[ j - width * 2 ] - data[ j + width * 2 ];
-            vector3.normalize();
-
-            shade = vector3.dot( sun );
-
-            imageData[ i ] = ( 96 + shade * 128 ) * ( 0.5 + data[ j ] * 0.007 );
-            imageData[ i + 1 ] = ( 32 + shade * 96 ) * ( 0.5 + data[ j ] * 0.007 );
-            imageData[ i + 2 ] = ( shade * 96 ) * ( 0.5 + data[ j ] * 0.007 );
-        }
-
-        context.putImageData( image, 0, 0 );
-
-        // Scaled 4x
-
-        canvasScaled = document.createElement( 'canvas' );
-        canvasScaled.width = width * 4;
-        canvasScaled.height = height * 4;
-
-        context = canvasScaled.getContext( '2d' );
-        context.scale( 4, 4 );
-        context.drawImage( canvas, 0, 0 );
-
-        image = context.getImageData( 0, 0, canvasScaled.width, canvasScaled.height );
-        imageData = image.data;
-
-        for ( var i = 0, l = imageData.length; i < l; i += 4 ) {
-
-            var v = ~~ ( Math.random() * 5 );
-
-            imageData[ i ] += v;
-            imageData[ i + 1 ] += v;
-            imageData[ i + 2 ] += v;
-
-        }
-
-        context.putImageData( image, 0, 0 );
-
-        return canvasScaled;
-
-    }
-
-    //
-
+    // Seen both animate and render functions done in a different way thight might be better for us
+    // Should change it
     function animate() {
-
         requestAnimationFrame( animate );
-
         render();
         stats.update();
-
     }
 
     function render() {
-
         controls.update( clock.getDelta() );
         renderer.render( scene, camera );
-
     }
 
+    // Do we use onProgress and onError
+    // Do we need it
     function onProgress( xhr ) {
         if ( xhr.lengthComputable ) {
             var percentComplete = xhr.loaded / xhr.total * 100;

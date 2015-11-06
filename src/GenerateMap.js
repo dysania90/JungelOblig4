@@ -3,6 +3,9 @@
  */
 GenerateMap = {}
 
+// Separate what has to do with creating the map and generating textures
+// Create a function generateMap that takes all input needed to generate the map, then generates it
+
 GenerateMap.generateHeight = function ( width, height ) {
 
     var size = width * height, data = new Uint8Array( size ),
