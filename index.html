@@ -5,30 +5,7 @@
     <title>Jungel</title>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, user-scalable=no, minimum-scale=1.0, maximum-scale=1.0">
-    <style>
-        body {
-            color: #61443e;
-            font-family:Monospace;
-            font-size:13px;
-            text-align:center;
-
-            background-color: #bfd1e5;
-            margin: 0px;
-            overflow: hidden;
-        }
-
-        #info {
-            position: absolute;
-            top: 0px; width: 100%;
-            padding: 5px;
-        }
-
-        a {
-
-            color: #a06851;
-        }
-
-    </style>
+    <link rel="stylesheet" href="style.css">
 </head>
 <body>
 
@@ -52,6 +29,7 @@
 
 <script src="src/HeightMapGeometry.js"></script>
 <script src="src/HeightMapMesh.js"></script>
+<script src="src/DayNightCycle.js"></script>
 
 
 <script id="instanced-vshader" type="x-shader/x-vertex">
@@ -148,22 +126,19 @@
         controls.movementSpeed = 1000;
         controls.lookSpeed = 0.1;
 
-        //
-        // Lights
-        //
+        ///////////////////////////////////////////////////////
+        //                      Lights                      //
+        /////////////////////////////////////////////////////
 
         // Needed for materials using phong shading
         var ambientLight = new THREE.AmbientLight(0xffffff);
         ambientLight.name = 'ambientLight';
         scene.add(ambientLight);
 
-        var directionalLight = new THREE.DirectionalLight(0xf5a914, 2.0); //colour of the sun
-        directionalLight.name = 'sun';
-        directionalLight.position.set(10000, 5000, 10000);
-        //directionalLight.rotateZ(45 *Math.PI/180);
-        scene.add(directionalLight);
+        var sunLight = new DayNightCycle.sunLight();
+        scene.add( sunLight.object3d );
 
-        scene.add(new THREE.DirectionalLightHelper(directionalLight, 100));
+        //scene.add(new THREE.DirectionalLightHelper(sunLight, 100));
 
         //
         // Height map generation/extraction
@@ -221,22 +196,6 @@
 /*        dirtroadMesh = new HeightMapMesh( dirtroadGeometry, new THREE.MeshBasicMaterial( { map: dirtroadtexture } ) );
         dirtroadMesh.name = "dirtroad";
         scene.add(dirtroadMesh);*/
-
-
-        /*Sirkelformet spline-kurve*/
-        var path = new THREE.CircleGeometry(2, 50);
-
-        var circleMaterial = new THREE.LineBasicMaterial( {color: 0xff0000} );
-
-        var circleSplineObject = new THREE.Line(path, circleMaterial);
-
-        scene.add(circleSplineObject);
-
-        circleSplineObject.rotateX(45);
-        circleSplineObject.scale.set(500, 500, 500);
-        circleSplineObject.position.set(1000,1700,1000);
-        /* */
-
 
         /*Irregulaert formet spline-kurve*/
         var randomPoints = [];
@@ -321,36 +280,6 @@
         customBox.position.setY(terrainMesh.getHeightAtPoint(customBox.position));
 
         //
-        // Model loading
-        // Examples: all loader/* examples on threejs.org/examples
-        //
-
-        // There are several other model loaders for other types, just look in Three.js' example folder.
-        var objectMaterialLoader = new THREE.OBJMTLLoader();
-        /*objectMaterialLoader.load(
-                'resources/mesh/samples/terrain/tree/palm_tree/palm_straight.obj',
-                'resources/textures/samples/terrain/tree/palm_tree/palm_tree.mtl',
-                function setUpLowPolyTree( object ) {
-                    // Custom function to handle what's supposed to happen once we've loaded the model
-                    object.scale.set(1, 1, 1);
-
-                    var bbox = new THREE.Box3().setFromObject(object);
-
-                    object.position.set(100, 0, 100);
-                    object.position.y = terrainMesh.getHeightAtPoint(object.position);
-
-                    // We should know where the bottom of our object is
-                    object.position.y -= bbox.min.y;
-
-                    object.name = "Palm";
-
-                    terrainMesh.add( object );
-                }, onProgress, onError );*/
-
-
-
-
-        //
         // Generate random positions for some number of boxes
         // Used in instancing. Better examples:
         //  * http://threejs.org/examples/#webgl_buffergeometry_instancing_dynamic
@@ -374,35 +303,6 @@
             pos.y = terrainMesh.getHeightAtPoint(pos);
             pos.toArray(translationArray, i3);
         }
-
-        /*for(var i = 0; i < numBoxes; i++) {
-
-                objectMaterialLoader.load(
-                        'models/lowPolyTree/lowpolytree.obj',
-                        'models/lowPolyTree/lowpolytree.mtl',
-                        function setUpLowPolyTree( object ) {
-                            // Custom function to handle what's supposed to happen once we've loaded the model
-                            object.scale.set(100, 100, 100);
-
-                            var bbox = new THREE.Box3().setFromObject(object);
-                            var randx = radius * (2*Math.random() - 1);
-                            var randy = radius * (2*Math.random() - 1);
-                            var randz = radius * (2*Math.random() - 1);
-
-                            object.position.set(randx, randy, randz);
-                            object.position.y = terrainMesh.getHeightAtPoint(object.position);
-
-                            // We should know where the bottom of our object is
-                            object.position.y -= bbox.min.y;
-
-                            object.name = "LowPolyTree";
-
-                            if(object.position.y > 325 ) {
-                                terrainMesh.add(object);
-                            }
-                        }, onProgress, onError );
-
-        }*/
 
         var texture = new THREE.Texture();
         var texture2 = new THREE.Texture();
@@ -478,22 +378,22 @@
 
         for(var i = 0; i < numBoxes; i++) {
 
-            objectLoader.load( models[4], function ( object ) {
+            objectLoader.load(models[4], function (object) {
 
-                object.traverse( function ( child ) {
+                object.traverse(function (child) {
 
-                    if ( child instanceof THREE.Mesh ) {
+                    if (child instanceof THREE.Mesh) {
 
                         child.material.map = texture2;
 
                     }
 
-                } );
+                });
 
                 var bbox = new THREE.Box3().setFromObject(object);
-                var randx = radius * (2*Math.random() - 1);
-                var randy = radius * (2*Math.random() - 1);
-                var randz = radius * (2*Math.random() - 1);
+                var randx = radius * (2 * Math.random() - 1);
+                var randy = radius * (2 * Math.random() - 1);
+                var randz = radius * (2 * Math.random() - 1);
 
                 object.position.set(randx, randy, randz);
                 object.position.y = terrainMesh.getHeightAtPoint(object.position);
@@ -501,41 +401,14 @@
 
                 object.name = "Tropical plant";
 
-                if(object.position.y > (waterLevel + 70)) {
+                if (object.position.y > (waterLevel + 70)) {
                     terrainMesh.add(object);
                 }
 
 
-            }, onProgress, onError );
+            }, onProgress, onError);
             j++;
         }
-
-
-        objectMaterialLoader.load(
-                'models/rocks/rock1/Rock1.obj',
-                'models/rocks/rock1/Rock1.mtl',
-                function setUpRock( object ) {
-                    // Custom function to handle what's supposed to happen once we've loaded the model
-
-                    // Sometimes models contain uninteresting parts, extract meaningfull parts.
-                    var interestingObject = object.children[1].children[1];
-                    interestingObject.scale.set(100, 100, 100);
-
-                    var bbox = new THREE.Box3().setFromObject(interestingObject);
-
-                    interestingObject.position.set(200, 0, 200);
-                    interestingObject.position.y = terrainMesh.getHeightAtPoint(object.position);
-
-                    interestingObject.position.y -= bbox.min.y;
-
-                    interestingObject.name = "rock1";
-                    //interestingObject.material.map = THREE.ImageUtils.loadTexture('models/rocks/rock1/Rock-Texture-Surface.jpg');
-                    interestingObject.material.map = null;
-                    interestingObject.material.color = new THREE.Color(0.1, 0.1, 0.1);
-
-
-                    terrainMesh.add( interestingObject );
-                }, onProgress, onError );
 
         // Lots of other possibilities, eg: custom color per object, objects changing (requires dynamic
         // InstancedBufferAttribute, see its setDynamic), but require more shader magic.

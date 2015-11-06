@@ -1,8 +1,9 @@
 /**
  * Created by Kristoffer on 02/11/2015.
  */
+DayNightCycle = {}
 
-function sunLight (){
+DayNightCycle.sunLight = function  (){
     var light = new THREE.DirectionalLight(0xf5a914, 2.0); //colour of the sun
     this.object3d	= light;
 
