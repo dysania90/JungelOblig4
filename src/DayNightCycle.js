@@ -26,7 +26,7 @@ DayNightCycle.sunLight = function  (){
 ///////////////////////////////////////////
 
 DayNightCycle.sunObject = function () {
-    var sunGeometry	= new THREE.SphereGeometry( 20, 30, 30 );
+    var sunGeometry	= new THREE.SphereGeometry( 200, 300, 300 );
     var sunMaterial	= new THREE.MeshBasicMaterial({
         color		: 0xff0000
     });
@@ -38,6 +38,8 @@ DayNightCycle.sunObject = function () {
         mesh.position.y = Math.sin(sunAngle) * 400;
         mesh.position.z = Math.cos(sunAngle) * 400;
     }
+
+
 }
 
 /////////////////////////////////////////////

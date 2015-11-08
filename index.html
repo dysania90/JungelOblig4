@@ -25,6 +25,8 @@
 <script src="bower_components/three.js/examples/js/Detector.js"></script>
 <script src="bower_components/three.js/examples/js/libs/stats.min.js"></script>
 
+<script src="bower_components/three.js/examples/js/objects/ShadowMesh.js"></script>
+
 <script src="src/HeightMapGeometry.js"></script>
 <script src="src/HeightMapMesh.js"></script>
 <script src="src/DayNightCycle.js"></script>
@@ -80,7 +82,11 @@
     var camera, controls, scene, renderer;
 
     // Probably GenerateMap
-    var terrainData, terrainMesh, terrainTexture, dirtroadMesh, waterMesh, waterData;
+    var terrainData, terrainMesh, terrainTexture, dirtroadMesh, waterMesh, waterData, sunMesh;
+
+    var sunLight;
+    var frameTime;
+    var angle = 0.0;
 
     // WAAAAAY too many var stuff here. Move it where it belongs (GenerateTexture for the most part)
     /*Ground texture*/
@@ -135,10 +141,46 @@
         ambientLight.name = 'ambientLight';
         scene.add(ambientLight);
 
-        var sunLight = new DayNightCycle.sunLight();
-        scene.add( sunLight.object3d );
+        sunLight = new DayNightCycle.sunLight();
 
-        //scene.add(new THREE.DirectionalLightHelper(sunLight, 100));
+        sunLight.name = 'sun';
+        sunLight.object3d.position.set(10000, 5000, 10000);
+
+        sunLight.object3d.castShadow = true;
+        sunLight.object3d.shadowCameraVisible = true;
+
+        sunLight.object3d.castShadow = true;
+
+        sunLight.object3d.shadowMapWidth = 512;
+        sunLight.object3d.shadowMapHeight = 512;
+
+        //directionalLight.shadowCameraNear = 5;
+        sunLight.object3d.shadowCameraFar = 40000;
+        //directionalLight.shadowCameraFov = 360;
+
+        var d = 15000;
+        sunLight.object3d.shadowCameraRight = d;
+        sunLight.object3d.shadowCameraLeft = -d;
+        sunLight.object3d.shadowCameraTop = d;
+        sunLight.object3d.shadowCameraBottom = -d;
+
+        sunLight.object3d.shadowDarkness = 0.5;
+
+        sunLight.shadowCameraVisible = true;
+
+        scene.add( sunLight.object3d );
+        scene.add(new THREE.DirectionalLightHelper(sunLight.object3d, 100));
+
+        var sunGeometry	= new THREE.SphereGeometry( 200, 300, 300 );
+        var sunMaterial	= new THREE.MeshBasicMaterial({
+            color		: 0xff0000
+        });
+        sunMesh	= new THREE.Mesh(sunGeometry, sunMaterial);
+
+        scene.add(sunMesh);
+        sunMesh.position.x = sunLight.object3d.position.x;
+        sunMesh.position.y = sunLight.object3d.position.y;
+        sunMesh.position.z = sunLight.object3d.position.z;
 
         //
         // Height map generation/extraction
@@ -332,6 +374,8 @@
             'resources/mesh/samples/terrain/plants/tropical_plant2/tropical_plant.obj' ];
 
         var j = 0;
+        var palmShadow;
+        var plantShadow;
         for(var i = 0; i < numBoxes; i++) {
 
             if(j === 4) {
@@ -357,11 +401,15 @@
                 object.position.set(randx, randy, randz);
                 object.position.y = terrainMesh.getHeightAtPoint(object.position);
                 /*object.position.y -= bbox.min.y;*/
+                object.castShadow = true;
+                object.receiveShadows = true;
 
                 object.name = "Palm";
 
+                palmShadow = new THREE.ShadowMesh(object);
                 if(object.position.y > (waterLevel + 70)) {
                     terrainMesh.add(object);
+                    terrainMesh.add(palmShadow);
                 }
 
 
@@ -401,6 +449,9 @@
 
                 object.name = "Tropical plant";
 
+                object.castShadow = true;
+                object.receiveShadows = true;
+
                 if (object.position.y > (waterLevel + 70)) {
                     terrainMesh.add(object);
                 }
@@ -433,6 +484,9 @@
         renderer.setPixelRatio( window.devicePixelRatio );
         renderer.setSize( window.innerWidth, window.innerHeight );
 
+        renderer.shadowMapEnabled = true;
+        renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+        renderer.shadowDarkness = 1.0;
         container.innerHTML = "";
 
         container.appendChild( renderer.domElement );
@@ -456,9 +510,18 @@
     // Seen both animate and render functions done in a different way thight might be better for us
     // Should change it
     function animate() {
+
         requestAnimationFrame( animate );
+
+        angle +=0.009;
+        sunLight.update(angle);
+
+        sunMesh.position.y = Math.sin(angle) * 1500;
+        sunMesh.position.z = Math.cos(angle) * 1500;
+
         render();
         stats.update();
+
     }
 
     function render() {
@@ -486,4 +549,4 @@
 <img src="textures/watermap.jpg" id="watermap" hidden/>
 
 </body>
-</html>
+<
