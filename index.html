@@ -1,34 +1,10 @@
-
 <!DOCTYPE html>
 <html lang="en">
 <head>
     <title>Jungel</title>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, user-scalable=no, minimum-scale=1.0, maximum-scale=1.0">
-    <style>
-        body {
-            color: #61443e;
-            font-family:Monospace;
-            font-size:13px;
-            text-align:center;
-
-            background-color: #bfd1e5;
-            margin: 0px;
-            overflow: hidden;
-        }
-
-        #info {
-            position: absolute;
-            top: 0px; width: 100%;
-            padding: 5px;
-        }
-
-        a {
-
-            color: #a06851;
-        }
-
-    </style>
+    <link rel="stylesheet" href="style.css">
 </head>
 <body>
 
@@ -38,7 +14,6 @@
 <script src="bower_components/three.js/build/three.min.js"></script>
 <script src="bower_components/three.js/build/three.js"></script>
 <script src="bower_components/three.js/examples/js/loaders/OBJLoader.js"></script>
-
 
 <script src="bower_components/three.js/examples/js/loaders/DDSLoader.js"></script>
 <script src="bower_components/three.js/examples/js/loaders/MTLLoader.js"></script>
@@ -50,8 +25,14 @@
 <script src="bower_components/three.js/examples/js/Detector.js"></script>
 <script src="bower_components/three.js/examples/js/libs/stats.min.js"></script>
 
+<script src="bower_components/three.js/examples/js/objects/ShadowMesh.js"></script>
+
 <script src="src/HeightMapGeometry.js"></script>
 <script src="src/HeightMapMesh.js"></script>
+<script src="src/DayNightCycle.js"></script>
+<script src="src/GenerateMap.js"></script>
+<script src="src/GenerateObjects.js"></script>
+<script src="src/GenerateTexture.js"></script>
 
 
 <script id="instanced-vshader" type="x-shader/x-vertex">
@@ -61,7 +42,6 @@
         // Instanced attribute, updated only when a new instance is drawn (ie. when all vertices have been drawn and
         // we're going to draw a slightly different one.
 		attribute vec3 translate;
-
 
 		varying vec2 vUv;
 
@@ -75,7 +55,7 @@
 
 		}
 
-	</script>
+</script>
 
 <script id="fshader" type="x-shader/x-fragment">
         // Other attributes and uniforms are supposed to be filled in by Three.js
@@ -88,24 +68,27 @@
 			gl_FragColor = vec4(color, 1.0);
 
 		}
-	</script>
+</script>
 
 <script>
-
+    // What is this, do we need it?
     if ( ! Detector.webgl ) {
-
         Detector.addGetWebGLMessage();
         document.getElementById( 'container' ).innerHTML = "";
-
     }
-
 
     var container, stats;
 
     var camera, controls, scene, renderer;
 
-    var terrainData, terrainMesh, terrainTexture, dirtroadMesh, waterMesh, waterData;
+    // Probably GenerateMap
+    var terrainData, terrainMesh, terrainTexture, dirtroadMesh, waterMesh, waterData, sunMesh;
 
+    var sunLight;
+    var frameTime;
+    var angle = 0.0;
+
+    // WAAAAAY too many var stuff here. Move it where it belongs (GenerateTexture for the most part)
     /*Ground texture*/
     var groundtexture = THREE.ImageUtils.loadTexture( "textures/junglefloortexture.jpg" );
     groundtexture.wrapS = THREE.RepeatWrapping;
@@ -148,54 +131,92 @@
         controls.movementSpeed = 1000;
         controls.lookSpeed = 0.1;
 
-        //
-        // Lights
-        //
+        ///////////////////////////////////////////////////////
+        //                      Lights                      //
+        /////////////////////////////////////////////////////
 
         // Needed for materials using phong shading
+        // This needs to be done differently
         var ambientLight = new THREE.AmbientLight(0xffffff);
         ambientLight.name = 'ambientLight';
         scene.add(ambientLight);
 
-        var directionalLight = new THREE.DirectionalLight(0xf5a914, 2.0); //colour of the sun
-        directionalLight.name = 'sun';
-        directionalLight.position.set(10000, 5000, 10000);
-        //directionalLight.rotateZ(45 *Math.PI/180);
-        scene.add(directionalLight);
+        sunLight = new DayNightCycle.sunLight();
 
-        scene.add(new THREE.DirectionalLightHelper(directionalLight, 100));
+        sunLight.name = 'sun';
+        sunLight.object3d.position.set(10000, 5000, 10000);
+
+        sunLight.object3d.castShadow = true;
+        sunLight.object3d.shadowCameraVisible = true;
+
+        sunLight.object3d.castShadow = true;
+
+        sunLight.object3d.shadowMapWidth = 512;
+        sunLight.object3d.shadowMapHeight = 512;
+
+        //directionalLight.shadowCameraNear = 5;
+        sunLight.object3d.shadowCameraFar = 40000;
+        //directionalLight.shadowCameraFov = 360;
+
+        var d = 15000;
+        sunLight.object3d.shadowCameraRight = d;
+        sunLight.object3d.shadowCameraLeft = -d;
+        sunLight.object3d.shadowCameraTop = d;
+        sunLight.object3d.shadowCameraBottom = -d;
+
+        sunLight.object3d.shadowDarkness = 0.5;
+
+        sunLight.shadowCameraVisible = true;
+
+        scene.add( sunLight.object3d );
+        scene.add(new THREE.DirectionalLightHelper(sunLight.object3d, 100));
+
+        var sunGeometry	= new THREE.SphereGeometry( 200, 300, 300 );
+        var sunMaterial	= new THREE.MeshBasicMaterial({
+            color		: 0xff0000
+        });
+        sunMesh	= new THREE.Mesh(sunGeometry, sunMaterial);
+
+        scene.add(sunMesh);
+        sunMesh.position.x = sunLight.object3d.position.x;
+        sunMesh.position.y = sunLight.object3d.position.y;
+        sunMesh.position.z = sunLight.object3d.position.z;
 
         //
         // Height map generation/extraction
+        // Needs to move to GenerateMap
         //
 
         var useRandomHeightMap = false;
 
         if (useRandomHeightMap) {
-            terrainData = generateHeight( worldWidth, worldDepth );
+            terrainData = GenerateMap.generateHeight( worldWidth, worldDepth );
         } else {
             var heightMapImage = document.getElementById('heightmap');
-            terrainData = getPixelValues(heightMapImage, 'r');
+            terrainData = GenerateMap.getPixelValues(heightMapImage, 'r');
             worldWidth = heightMapImage.width;
             worldDepth = heightMapImage.height;
             worldHalfWidth = Math.floor(worldWidth / 2);
             worldHalfDepth = Math.floor(worldDepth / 2);
         }
         var waterMapImage = document.getElementById('watermap');
-        waterData = getPixelValues(waterMapImage, 'r');
+        waterData = GenerateMap.getPixelValues(waterMapImage, 'r');
 
         // Not required to use the generated texture
-        terrainTexture = new THREE.CanvasTexture( generateTexture( terrainData, worldWidth, worldDepth ) );
+        // Where do we generate textures? Seems to be spread out. Needs to clump it together and
+        // move to own file (GenerateTexture)
+        terrainTexture = new THREE.CanvasTexture( GenerateTexture.generateTexture( terrainData, worldWidth, worldDepth ) );
         terrainTexture.wrapS = THREE.ClampToEdgeWrapping;
         terrainTexture.wrapT = THREE.ClampToEdgeWrapping;
 
         //
         // Generate terrain geometry and mesh
+        // This need to move to GenerateMap
         //
 
         var heightMapGeometry = new HeightMapBufferGeometry(terrainData, worldWidth, worldDepth);
         // We scale the geometry to avoid scaling the node, since scales propagate.
-        heightMapGeometry.scale(50*worldWidth, 1000, 50*worldDepth);
+        heightMapGeometry.scale(50*worldWidth, 4500, 50*worldDepth);
 
         var dirtroadGeometry = new HeightMapBufferGeometry(terrainData, worldWidth, worldDepth);
         dirtroadGeometry.scale(40*worldWidth, 1000, 40*worldDepth);
@@ -204,6 +225,9 @@
         terrainMesh = new HeightMapMesh( heightMapGeometry, new THREE.MeshLambertMaterial( { map: groundtexture } ) );
         terrainMesh.name = "terrain";
 
+        terrainMesh.castShadow = true;
+        terrainMesh.receiveShadows = true;
+
         scene.add( terrainMesh );
 
         var waterGeometry = new HeightMapBufferGeometry(waterData, worldWidth, worldDepth);
@@ -211,6 +235,8 @@
 
         waterMesh = new HeightMapMesh(waterGeometry, new THREE.MeshLambertMaterial({ map: watertexture}));
         waterMesh.name = "water";
+
+        waterMesh.recieveShadows = true;
 
         scene.add(waterMesh);
         waterMesh.position.y -= 976;
@@ -222,23 +248,8 @@
         dirtroadMesh.name = "dirtroad";
         scene.add(dirtroadMesh);*/
 
-
-        /*Sirkelformet spline-kurve*/
-        var path = new THREE.CircleGeometry(2, 50);
-
-        var circleMaterial = new THREE.LineBasicMaterial( {color: 0xff0000} );
-
-        var circleSplineObject = new THREE.Line(path, circleMaterial);
-
-        scene.add(circleSplineObject);
-
-        circleSplineObject.rotateX(45);
-        circleSplineObject.scale.set(500, 500, 500);
-        circleSplineObject.position.set(1000,1700,1000);
-        /* */
-
-
         /*Irregulaert formet spline-kurve*/
+        // Move this to MovementAndCamera and make it work!
         var randomPoints = [];
 
         /*
@@ -286,18 +297,14 @@
              }*/
         }
 
-
-
         var splineCurve = new THREE.CatmullRomCurve3(randomPoints);
 
         var geometry = new THREE.Geometry();
         geometry.vertices = splineCurve.getPoints(2000);
 
-/*
-        for(var i = 0; i < 1000; i++) {
+        /*  for(var i = 0; i < 1000; i++) {
             geometry.vertices[i].y = terrainMesh.getHeightAtPoint(geometry.vertices[i]);
-        }
-*/
+        }   */
 
         var irregularMaterial = new THREE.LineBasicMaterial( {color: 0x0000ff} );
 
@@ -306,12 +313,20 @@
 
         splineCurveObject.position.set(1000,100,1000);
 
-        /* */
+        // End move to MovementAndCamera
 
         //
         // Some other updates
+        // What updates, when does these updates end??
         //
 
+
+        //Old camera position, approximately on the middle of the map.
+/*        camera.position.y = terrainMesh.getHeightAtPoint(camera.position) + 500;*/
+
+        //New camera position, on the "southern" side of the map
+        camera.position.x = -10000;
+        camera.position.z = 3000;
         camera.position.y = terrainMesh.getHeightAtPoint(camera.position) + 500;
 
         var boxGeom = new THREE.BoxGeometry(100, 100, 100);
@@ -319,36 +334,6 @@
 
         terrainMesh.add(customBox);
         customBox.position.setY(terrainMesh.getHeightAtPoint(customBox.position));
-
-        //
-        // Model loading
-        // Examples: all loader/* examples on threejs.org/examples
-        //
-
-        // There are several other model loaders for other types, just look in Three.js' example folder.
-        var objectMaterialLoader = new THREE.OBJMTLLoader();
-        /*objectMaterialLoader.load(
-                'resources/mesh/samples/terrain/tree/palm_tree/palm_straight.obj',
-                'resources/textures/samples/terrain/tree/palm_tree/palm_tree.mtl',
-                function setUpLowPolyTree( object ) {
-                    // Custom function to handle what's supposed to happen once we've loaded the model
-                    object.scale.set(1, 1, 1);
-
-                    var bbox = new THREE.Box3().setFromObject(object);
-
-                    object.position.set(100, 0, 100);
-                    object.position.y = terrainMesh.getHeightAtPoint(object.position);
-
-                    // We should know where the bottom of our object is
-                    object.position.y -= bbox.min.y;
-
-                    object.name = "Palm";
-
-                    terrainMesh.add( object );
-                }, onProgress, onError );*/
-
-
-
 
         //
         // Generate random positions for some number of boxes
@@ -362,67 +347,26 @@
         // Copy geometry from a standard box.
         instancedBoxGeom.fromGeometry(new THREE.BoxGeometry(100, 100, 100));
 
-        var numBoxes = 1000;
+        var numBoxes = 10;
         var center = new THREE.Vector3(0,0,0);
         var radius = 50 * worldHalfWidth;
-
-        var translationArray = generateRandomPositions(numBoxes, center, radius);
-
-        for (var i = 0, i3 = 0; i < numBoxes; ++i, i3 += 3) {
-            // Correct height positions
-            var pos = new THREE.Vector3().fromArray(translationArray, i3);
-            pos.y = terrainMesh.getHeightAtPoint(pos);
-            pos.toArray(translationArray, i3);
-        }
-
-        /*for(var i = 0; i < numBoxes; i++) {
-
-                objectMaterialLoader.load(
-                        'models/lowPolyTree/lowpolytree.obj',
-                        'models/lowPolyTree/lowpolytree.mtl',
-                        function setUpLowPolyTree( object ) {
-                            // Custom function to handle what's supposed to happen once we've loaded the model
-                            object.scale.set(100, 100, 100);
-
-                            var bbox = new THREE.Box3().setFromObject(object);
-                            var randx = radius * (2*Math.random() - 1);
-                            var randy = radius * (2*Math.random() - 1);
-                            var randz = radius * (2*Math.random() - 1);
-
-                            object.position.set(randx, randy, randz);
-                            object.position.y = terrainMesh.getHeightAtPoint(object.position);
-
-                            // We should know where the bottom of our object is
-                            object.position.y -= bbox.min.y;
-
-                            object.name = "LowPolyTree";
-
-                            if(object.position.y > 325 ) {
-                                terrainMesh.add(object);
-                            }
-                        }, onProgress, onError );
-
-        }*/
 
         var texture = new THREE.Texture();
         var texture2 = new THREE.Texture();
 
+        // Guessing the start of generating objects is here, make a function and move it
         var manager = new THREE.LoadingManager();
         manager.onProgress = function ( item, loaded, total ) {
 
             console.log( item, loaded, total );
-
         };
 
         var loader = new THREE.ImageLoader( manager );
         loader.load( 'resources/textures/samples/terrain/tree/palm_tree/diffuse.png', function ( image ) {
-
             texture.image = image;
             texture.needsUpdate = true;
-
         } );
 
-        //en kommentar
         var objectLoader = new THREE.OBJLoader( manager );
 
         var models = ['models/palmTrees/palm_straight.obj', 'models/palmTrees/palm_bend.obj',
@@ -430,6 +374,8 @@
             'resources/mesh/samples/terrain/plants/tropical_plant2/tropical_plant.obj' ];
 
         var j = 0;
+        var palmShadow;
+        var plantShadow;
         for(var i = 0; i < numBoxes; i++) {
 
             if(j === 4) {
@@ -455,19 +401,21 @@
                 object.position.set(randx, randy, randz);
                 object.position.y = terrainMesh.getHeightAtPoint(object.position);
                 /*object.position.y -= bbox.min.y;*/
+                object.castShadow = true;
+                object.receiveShadows = true;
 
                 object.name = "Palm";
 
+                palmShadow = new THREE.ShadowMesh(object);
                 if(object.position.y > (waterLevel + 70)) {
                     terrainMesh.add(object);
+                    terrainMesh.add(palmShadow);
                 }
 
 
             }, onProgress, onError );
             j++;
         }
-
-
 
         loader.load( 'resources/textures/samples/terrain/plants/tropical_plant2/diffuse.png', function ( image ) {
 
@@ -478,22 +426,22 @@
 
         for(var i = 0; i < numBoxes; i++) {
 
-            objectLoader.load( models[4], function ( object ) {
+            objectLoader.load(models[4], function (object) {
 
-                object.traverse( function ( child ) {
+                object.traverse(function (child) {
 
-                    if ( child instanceof THREE.Mesh ) {
+                    if (child instanceof THREE.Mesh) {
 
                         child.material.map = texture2;
 
                     }
 
-                } );
+                });
 
                 var bbox = new THREE.Box3().setFromObject(object);
-                var randx = radius * (2*Math.random() - 1);
-                var randy = radius * (2*Math.random() - 1);
-                var randz = radius * (2*Math.random() - 1);
+                var randx = radius * (2 * Math.random() - 1);
+                var randy = radius * (2 * Math.random() - 1);
+                var randz = radius * (2 * Math.random() - 1);
 
                 object.position.set(randx, randy, randz);
                 object.position.y = terrainMesh.getHeightAtPoint(object.position);
@@ -501,45 +449,17 @@
 
                 object.name = "Tropical plant";
 
-                if(object.position.y > (waterLevel + 70)) {
+                object.castShadow = true;
+                object.receiveShadows = true;
+
+                if (object.position.y > (waterLevel + 70)) {
                     terrainMesh.add(object);
                 }
 
 
-            }, onProgress, onError );
+            }, onProgress, onError);
             j++;
         }
-
-
-        objectMaterialLoader.load(
-                'models/rocks/rock1/Rock1.obj',
-                'models/rocks/rock1/Rock1.mtl',
-                function setUpRock( object ) {
-                    // Custom function to handle what's supposed to happen once we've loaded the model
-
-                    // Sometimes models contain uninteresting parts, extract meaningfull parts.
-                    var interestingObject = object.children[1].children[1];
-                    interestingObject.scale.set(100, 100, 100);
-
-                    var bbox = new THREE.Box3().setFromObject(interestingObject);
-
-                    interestingObject.position.set(200, 0, 200);
-                    interestingObject.position.y = terrainMesh.getHeightAtPoint(object.position);
-
-                    interestingObject.position.y -= bbox.min.y;
-
-                    interestingObject.name = "rock1";
-                    //interestingObject.material.map = THREE.ImageUtils.loadTexture('models/rocks/rock1/Rock-Texture-Surface.jpg');
-                    interestingObject.material.map = null;
-                    interestingObject.material.color = new THREE.Color(0.1, 0.1, 0.1);
-
-
-                    terrainMesh.add( interestingObject );
-                }, onProgress, onError );
-
-        // Lots of other possibilities, eg: custom color per object, objects changing (requires dynamic
-        // InstancedBufferAttribute, see its setDynamic), but require more shader magic.
-        instancedBoxGeom.addAttribute( "translate", new THREE.InstancedBufferAttribute(translationArray, 3, 1) );
 
         var instancedMaterial = new THREE.ShaderMaterial( {
             uniforms: {
@@ -556,6 +476,7 @@
 
         //
         // Set up renderer
+        // Seen this done better, cleaner. We need to do this
         //
 
         renderer = new THREE.WebGLRenderer();
@@ -563,6 +484,9 @@
         renderer.setPixelRatio( window.devicePixelRatio );
         renderer.setSize( window.innerWidth, window.innerHeight );
 
+        renderer.shadowMapEnabled = true;
+        renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+        renderer.shadowDarkness = 1.0;
         container.innerHTML = "";
 
         container.appendChild( renderer.domElement );
@@ -572,116 +496,28 @@
         stats.domElement.style.top = '0px';
         container.appendChild( stats.domElement );
 
-        //
-
         window.addEventListener( 'resize', onWindowResize, false );
 
     }
 
     function onWindowResize() {
-
         camera.aspect = window.innerWidth / window.innerHeight;
         camera.updateProjectionMatrix();
-
         renderer.setSize( window.innerWidth, window.innerHeight );
-
         controls.handleResize();
-
     }
 
-    function generateHeight( width, height ) {
-
-        var size = width * height, data = new Uint8Array( size ),
-                perlin = new ImprovedNoise(), quality = 1, z = Math.random() * 100;
-
-        for ( var j = 0; j < 4; j ++ ) {
-
-            for ( var i = 0; i < size; i ++ ) {
-
-                var x = i % width, y = ~~ ( i / width );
-                data[ i ] += Math.abs( perlin.noise( x / quality, y / quality, z ) * quality * 1.75 );
-
-            }
-
-            quality *= 5;
-
-        }
-
-        return data;
-
-    }
-
-    function generateTexture( data, width, height ) {
-
-        var canvas, canvasScaled, context, image, imageData,
-                level, diff, vector3, sun, shade;
-
-        vector3 = new THREE.Vector3( 0, 0, 0 );
-
-        sun = new THREE.Vector3( 1, 1, 1 );
-        sun.normalize();
-
-        canvas = document.createElement( 'canvas' );
-        canvas.width = width;
-        canvas.height = height;
-
-        context = canvas.getContext( '2d' );
-        context.fillStyle = '#000';
-        context.fillRect( 0, 0, width, height );
-
-        image = context.getImageData( 0, 0, canvas.width, canvas.height );
-        imageData = image.data;
-
-        for ( var i = 0, j = 0, l = imageData.length; i < l; i += 4, j ++ ) {
-
-            vector3.x = data[ j - 2 ] - data[ j + 2 ];
-            vector3.y = 2;
-            vector3.z = data[ j - width * 2 ] - data[ j + width * 2 ];
-            vector3.normalize();
-
-            shade = vector3.dot( sun );
-
-            imageData[ i ] = ( 96 + shade * 128 ) * ( 0.5 + data[ j ] * 0.007 );
-            imageData[ i + 1 ] = ( 32 + shade * 96 ) * ( 0.5 + data[ j ] * 0.007 );
-            imageData[ i + 2 ] = ( shade * 96 ) * ( 0.5 + data[ j ] * 0.007 );
-        }
-
-        context.putImageData( image, 0, 0 );
-
-        // Scaled 4x
-
-        canvasScaled = document.createElement( 'canvas' );
-        canvasScaled.width = width * 4;
-        canvasScaled.height = height * 4;
-
-        context = canvasScaled.getContext( '2d' );
-        context.scale( 4, 4 );
-        context.drawImage( canvas, 0, 0 );
-
-        image = context.getImageData( 0, 0, canvasScaled.width, canvasScaled.height );
-        imageData = image.data;
-
-        for ( var i = 0, l = imageData.length; i < l; i += 4 ) {
-
-            var v = ~~ ( Math.random() * 5 );
-
-            imageData[ i ] += v;
-            imageData[ i + 1 ] += v;
-            imageData[ i + 2 ] += v;
-
-        }
-
-        context.putImageData( image, 0, 0 );
-
-        return canvasScaled;
-
-    }
-
-    //
-
+    // Seen both animate and render functions done in a different way thight might be better for us
+    // Should change it
     function animate() {
 
         requestAnimationFrame( animate );
+
+        angle +=0.009;
+        sunLight.update(angle);
+
+        sunMesh.position.y = Math.sin(angle) * 1500;
+        sunMesh.position.z = Math.cos(angle) * 1500;
 
         render();
         stats.update();
@@ -689,92 +525,12 @@
     }
 
     function render() {
-
         controls.update( clock.getDelta() );
         renderer.render( scene, camera );
-
     }
 
-    /**
-     * Extract pixel values from image elements. Not guaranteed to contain exactly the same values as
-     * the image file.
-     * @param {HTMLImageElement} domImage an image.
-     * @param {string} [pixelComponents='rgba'] the color components to extract
-     * @returns {array|Uint8ClampedArray} a color array
-     */
-    function getPixelValues(domImage, pixelComponents) {
-        "use strict";
-        var canvas = document.createElement('canvas');
-        canvas.width = domImage.width;
-        canvas.height = domImage.height;
-
-        var context2d = canvas.getContext('2d');
-        context2d.drawImage(domImage, 0, 0, domImage.width, domImage.height);
-
-        var imageData = context2d.getImageData(0, 0, domImage.width, domImage.height);
-
-        var componentExtractor = [];
-
-        if (pixelComponents === undefined) {
-            pixelComponents = 'rgba';
-        }
-
-        if (pixelComponents === 'r') { // Could extend this to other kinds of component extractors (eg. 'g', 'b','rb')
-            componentExtractor = [0];
-        } else if (pixelComponents === 'rg') {
-            componentExtractor = [0,1];
-        } else if (pixelComponents === 'rgb') {
-            componentExtractor = [0,1,2];
-        }else if (pixelComponents === 'rgba') {
-            componentExtractor = [0,1,2,3];
-            // return imageData.data;
-        } else {
-            console.error("unknown color component type");
-            return [];
-        }
-
-        var imageSize = imageData.height * imageData.width;
-        console.log(imageSize, imageData.data.length, imageData.data.length/4);
-        var numComponents = componentExtractor.length;
-
-        var pixelData = new Uint8ClampedArray(imageSize * numComponents);
-
-        for (var i= 0, i4 = 0; i < imageSize; i++, i4 += 4) {
-            for (var componentIdx = 0; componentIdx < numComponents; componentIdx++) {
-                pixelData[i*numComponents + componentIdx] = imageData.data[i4 + componentExtractor[componentIdx]];
-            }
-        }
-        
-        return pixelData;
-    }
-
-    /**
-     * @param {Number} count number of positions
-     * @param {THREE.Vector3} center where the position be centered about
-     * @param {Number} radius the max area
-     */
-    function generateRandomPositions(count, center, radius) {
-        var translationArray = new Float32Array(3 * count);
-
-        var pos = new THREE.Vector3();
-        for (var i = 0, i3 = 0; i < count; i++, i3 +=3) {
-            // One method to generate random positions
-            // TODO: make gauss distributed method, f.ex
-            pos.x = radius * (2*Math.random() - 1);
-            pos.y = radius * (2*Math.random() - 1);
-            pos.z = radius * (2*Math.random() - 1);
-
-            pos.add(center);
-            //translationArray[i3 + 0] = pos.x;
-            //translationArray[i3 + 1] = pos.y;
-            //translationArray[i3 + 2] = pos.z;
-
-            pos.toArray(translationArray, i3);
-        }
-
-        return translationArray;
-    }
-
+    // Do we use onProgress and onError
+    // Do we need it
     function onProgress( xhr ) {
         if ( xhr.lengthComputable ) {
             var percentComplete = xhr.loaded / xhr.total * 100;
@@ -786,11 +542,11 @@
 
 </script>
 
-<img src="textures/heightmap.jpeg" id="heightmap" hidden/>
+<img src="textures/heightmapIsland4.jpeg" id="heightmap" hidden/>
 <img src="textures/junglefloortexture.jpg" id="groundtexture" hidden/>
 <img src="textures/dirtroadtexture.jpg" id="dirtroadtexture" hidden/>
 <img src="textures/watertexture.jpg" id="watertexture" hidden/>
 <img src="textures/watermap.jpg" id="watermap" hidden/>
 
 </body>
-</html>
+<
