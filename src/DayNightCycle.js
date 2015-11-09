@@ -27,7 +27,7 @@ DayNightCycle.sunLight = function  (){
 
 DayNightCycle.sunObject = function () {
     var sunGeometry	= new THREE.SphereGeometry( 200, 300, 300 );
-    var sunMaterial	= new THREE.MeshBasicMaterial({
+    var sunMaterial	= new THREE.MeshPhongMaterial({
         color		: 0xff0000
     });
     var sunMesh	= new THREE.Mesh(sunGeometry, sunMaterial);
