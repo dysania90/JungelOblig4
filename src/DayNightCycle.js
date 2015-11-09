@@ -15,8 +15,8 @@ DayNightCycle.sunLight = function  (){
 
     this.update	= function(sunAngle){
         light.position.x = 0;
-        light.position.y = Math.sin(sunAngle) * 90000;
-        light.position.z = Math.cos(sunAngle) * 90000;
+        light.position.y = Math.sin(sunAngle) * 10000;
+        light.position.z = -Math.cos(sunAngle) * 10000;
 
     }
 }
@@ -35,8 +35,8 @@ DayNightCycle.sunObject = function () {
 
     this.update	= function(sunAngle) {
         mesh.position.x = 0;
-        mesh.position.y = Math.sin(sunAngle) * 400;
-        mesh.position.z = Math.cos(sunAngle) * 400;
+        mesh.position.y = Math.sin(sunAngle) * 10000;
+        mesh.position.z = -Math.cos(sunAngle) * 10000;
     }
 
 

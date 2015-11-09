@@ -82,11 +82,15 @@
     var camera, controls, scene, renderer;
 
     // Probably GenerateMap
-    var terrainData, terrainMesh, terrainTexture, dirtroadMesh, waterMesh, waterData, sunMesh;
+    var terrainData, terrainMesh, terrainTexture, dirtroadMesh, waterMesh, waterData;
 
     var sunLight;
     var frameTime;
     var angle = 0.0;
+
+    var lensFlare;
+    var flareColor;
+    var textureFlare0;
 
     // WAAAAAY too many var stuff here. Move it where it belongs (GenerateTexture for the most part)
     /*Ground texture*/
@@ -144,7 +148,7 @@
         sunLight = new DayNightCycle.sunLight();
 
         sunLight.name = 'sun';
-        sunLight.object3d.position.set(10000, 5000, 10000);
+        sunLight.object3d.position.set(10000, 10000, 10000);
 
         sunLight.object3d.castShadow = true;
         sunLight.object3d.shadowCameraVisible = true;
@@ -171,18 +175,23 @@
         scene.add( sunLight.object3d );
         scene.add(new THREE.DirectionalLightHelper(sunLight.object3d, 100));
 
-        var sunGeometry	= new THREE.SphereGeometry( 200, 300, 300 );
-        var sunMaterial	= new THREE.MeshBasicMaterial({
-            color		: 0xff0000
-        });
-        sunMesh	= new THREE.Mesh(sunGeometry, sunMaterial);
 
-        scene.add(sunMesh);
-        sunMesh.position.x = sunLight.object3d.position.x;
-        sunMesh.position.y = sunLight.object3d.position.y;
-        sunMesh.position.z = sunLight.object3d.position.z;
+        textureFlare0 = THREE.ImageUtils.loadTexture("textures/solarFlare.png");
 
-        //
+        flareColor = new THREE.Color(0xffaacc);
+        lensFlare = new THREE.LensFlare(textureFlare0, 350, 0.0, THREE.AdditiveBlending, flareColor);
+
+        lensFlare.add(textureFlare0, 60, 0.6, THREE.AdditiveBlending);
+        lensFlare.add(textureFlare0, 70, 0.7, THREE.AdditiveBlending);
+        lensFlare.add(textureFlare0, 120, 0.9, THREE.AdditiveBlending);
+        lensFlare.add(textureFlare0, 70, 1.0, THREE.AdditiveBlending);
+
+        lensFlare.position.set(sunLight.object3d.position.x, sunLight.object3d.position.y, sunLight.object3d.position.z);
+        //lensFlare.position.set(10000, 20000, 20000);
+        //lensFlare.position = sunLight.object3d.position;
+
+        scene.add(lensFlare);
+
         // Height map generation/extraction
         // Needs to move to GenerateMap
         //
@@ -479,7 +488,7 @@
         // Seen this done better, cleaner. We need to do this
         //
 
-        renderer = new THREE.WebGLRenderer();
+        renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true } );
         renderer.setClearColor( 0xbfd1e5 );
         renderer.setPixelRatio( window.devicePixelRatio );
         renderer.setSize( window.innerWidth, window.innerHeight );
@@ -516,8 +525,7 @@
         angle +=0.009;
         sunLight.update(angle);
 
-        sunMesh.position.y = Math.sin(angle) * 1500;
-        sunMesh.position.z = Math.cos(angle) * 1500;
+        lensFlare.position.set(sunLight.object3d.position.x, sunLight.object3d.position.y, sunLight.object3d.position.z);
 
         render();
         stats.update();
@@ -547,6 +555,7 @@
 <img src="textures/dirtroadtexture.jpg" id="dirtroadtexture" hidden/>
 <img src="textures/watertexture.jpg" id="watertexture" hidden/>
 <img src="textures/watermap.jpg" id="watermap" hidden/>
+
 
 </body>
 <
