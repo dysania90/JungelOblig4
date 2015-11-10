@@ -82,7 +82,11 @@
     var camera, controls, scene, renderer;
 
     // Probably GenerateMap
-    var terrainData, terrainMesh, terrainTexture, dirtroadMesh, waterMesh, waterData;
+    var groundData, groundMesh, groundTexture,
+            mountainData, mountainMesh, mountainTexture,
+            lavaData, lavaMesh, lavaTexture,
+            roadData, roadMesh, roadTexture,
+            waterMesh, waterData;
 
     var sunLight;
     var frameTime;
@@ -108,6 +112,17 @@
     groundtexture.wrapS = THREE.RepeatWrapping;
     groundtexture.wrapT = THREE.RepeatWrapping;
     groundtexture.repeat.set( 256, 256 );
+
+    var mountaintexture = THREE.ImageUtils.loadTexture( "textures/mountaintexture.jpg" );
+    mountaintexture.minFilter = THREE.NearestFilter;
+    groundtexture.wrapS = THREE.RepeatWrapping;
+    groundtexture.wrapT = THREE.RepeatWrapping;
+    /*groundtexture.repeat.set( 32, 32 );*/
+
+    var lavatexture = THREE.ImageUtils.loadTexture( "textures/lavatexture.jpg" );
+    lavatexture.wrapS = THREE.RepeatWrapping;
+    lavatexture.wrapT = THREE.RepeatWrapping;
+    lavatexture.repeat.set( 64, 64);
 
     /*Dirt road texture*/
     var dirtroadtexture = THREE.ImageUtils.loadTexture("textures/dirtroadtexture.jpg");
@@ -215,24 +230,33 @@
         var useRandomHeightMap = false;
 
         if (useRandomHeightMap) {
-            terrainData = GenerateMap.generateHeight( worldWidth, worldDepth );
+            groundData = GenerateMap.generateHeight( worldWidth, worldDepth );
         } else {
-            var heightMapImage = document.getElementById('heightmap');
-            terrainData = GenerateMap.getPixelValues(heightMapImage, 'r');
-            worldWidth = heightMapImage.width;
-            worldDepth = heightMapImage.height;
+            var groundImage = document.getElementById('groundmap');
+            groundData = GenerateMap.getPixelValues(groundImage, 'r');
+            worldWidth = groundImage.width;
+            worldDepth = groundImage.height;
             worldHalfWidth = Math.floor(worldWidth / 2);
             worldHalfDepth = Math.floor(worldDepth / 2);
         }
+
+        var mountainMapImage = document.getElementById('mountainmap');
+        mountainData = GenerateMap.getPixelValues(mountainMapImage, 'r');
+
+        var lavaMapImage = document.getElementById('lavamap');
+        lavaData = GenerateMap.getPixelValues(lavaMapImage, 'r');
+
         var waterMapImage = document.getElementById('watermap');
         waterData = GenerateMap.getPixelValues(waterMapImage, 'r');
 
+        var roadMapImage = document.getElementById('roadheightmap');
+        roadData = GenerateMap.getPixelValues(roadMapImage, 'r');
         // Not required to use the generated texture
         // Where do we generate textures? Seems to be spread out. Needs to clump it together and
         // move to own file (GenerateTexture)
-        terrainTexture = new THREE.CanvasTexture( GenerateTexture.generateTexture( terrainData, worldWidth, worldDepth ) );
+/*        terrainTexture = new THREE.CanvasTexture( GenerateTexture.generateTexture( terrainData, worldWidth, worldDepth ) );
         terrainTexture.wrapS = THREE.ClampToEdgeWrapping;
-        terrainTexture.wrapT = THREE.ClampToEdgeWrapping;
+        terrainTexture.wrapT = THREE.ClampToEdgeWrapping;*/
 
         //
         // Generate terrain geometry and mesh
@@ -240,22 +264,37 @@
         //
 
 
-        var heightMapGeometry = new HeightMapBufferGeometry(terrainData, worldWidth, worldDepth);
+        var groundGeometry = new HeightMapBufferGeometry(groundData, worldWidth, worldDepth);
         // We scale the geometry to avoid scaling the node, since scales propagate.
-        heightMapGeometry.scale(50*worldWidth, 4500, 50*worldDepth);
+        groundGeometry.scale(50*worldWidth, 4500, 50*worldDepth);
 
-/*        var dirtroadGeometry = new HeightMapBufferGeometry(terrainData, worldWidth, worldDepth);
-        dirtroadGeometry.scale(40*worldWidth, 1000, 40*worldDepth);*/
+        var groundMaterial = new THREE.MeshLambertMaterial( { map: groundtexture } );
 
-        var terrainMaterial = new THREE.MeshLambertMaterial( { map: groundtexture } );
+        groundMesh = new HeightMapMesh( groundGeometry,  groundMaterial);
+        groundMesh.name = "terrain";
+        groundMesh.receiveShadows = true;
+        scene.add( groundMesh );
 
-        terrainMesh = new HeightMapMesh( heightMapGeometry,  terrainMaterial);
-        terrainMesh.name = "terrain";
+        var mountainGeometry = new HeightMapBufferGeometry(mountainData, worldWidth, worldDepth);
+        mountainGeometry.scale(50*worldWidth, 4500, 50*worldDepth);
 
-        //terrainMesh.castShadow = true;
-        terrainMesh.receiveShadows = true;
+        mountainMesh = new HeightMapMesh( mountainGeometry, new THREE.MeshBasicMaterial( { map: mountaintexture } ) );
+        mountainMesh.name = "mountain";
+        scene.add(mountainMesh);
 
-        scene.add( terrainMesh );
+        var lavaGeometry = new HeightMapBufferGeometry(lavaData, worldWidth, worldDepth);
+        lavaGeometry.scale(50*worldWidth, 4500, 50*worldDepth);
+
+        lavaMesh = new HeightMapMesh( lavaGeometry, new THREE.MeshBasicMaterial( { map: lavatexture } ) );
+        lavaMesh.name = "lava";
+        scene.add(lavaMesh);
+
+        var roadGeometry = new HeightMapBufferGeometry(roadData, worldWidth, worldDepth);
+        roadGeometry.scale(50*worldWidth, 4500, 50*worldDepth);
+
+        roadMesh = new HeightMapMesh( roadGeometry, new THREE.MeshBasicMaterial( { map: dirtroadtexture } ) );
+        roadMesh.name = "dirtroad";
+        scene.add(roadMesh);
 
         var waterGeometry = new HeightMapBufferGeometry(waterData, worldWidth, worldDepth);
         waterGeometry.scale(50*worldWidth, 1000, 50*worldDepth);
@@ -268,12 +307,8 @@
         scene.add(waterMesh);
         waterMesh.position.y -= 976;
         var waterLevel = waterMesh.position.y + 976;
-/*        for(var i = 0; i <terrainData.length; i++) {
-            if(terrainData[])
-        }*/
-/*        dirtroadMesh = new HeightMapMesh( dirtroadGeometry, new THREE.MeshBasicMaterial( { map: dirtroadtexture } ) );
-        dirtroadMesh.name = "dirtroad";
-        scene.add(dirtroadMesh);*/
+
+
 
         /*Irregulaert formet spline-kurve*/
         // Move this to MovementAndCamera and make it work!
@@ -317,7 +352,7 @@
         );
 
         for(var i = 0; i < 14; i++) {
-            randomPoints[i].y = terrainMesh.getHeightAtPoint(randomPoints[i]);
+            randomPoints[i].y = groundMesh.getHeightAtPoint(randomPoints[i]);
 
            /* if(randomPoints[i].y < terrainMesh.getHeightAtPoint(randomPoints[i])) {
              randomPoints[i].y += 10;
@@ -354,13 +389,13 @@
         //New camera position, on the "southern" side of the map
         camera.position.x = -10000;
         camera.position.z = 3000;
-        camera.position.y = terrainMesh.getHeightAtPoint(camera.position) + 500;
+        camera.position.y = groundMesh.getHeightAtPoint(camera.position) + 500;
 
         var boxGeom = new THREE.BoxGeometry(100, 100, 100);
         var customBox = new THREE.Mesh(boxGeom);
 
-        terrainMesh.add(customBox);
-        customBox.position.setY(terrainMesh.getHeightAtPoint(customBox.position));
+        groundMesh.add(customBox);
+        customBox.position.setY(groundMesh.getHeightAtPoint(customBox.position));
 
         //
         // Generate random positions for some number of boxes
@@ -433,7 +468,7 @@
                 var randz = radius * (2*Math.random() - 1);
 
                 object.position.set(randx, randy, randz);
-                object.position.y = terrainMesh.getHeightAtPoint(object.position);
+                object.position.y = groundMesh.getHeightAtPoint(object.position);
                 /*object.position.y -= bbox.min.y;*/
                 object.castShadow = true;
                 object.receiveShadows = true;
@@ -444,7 +479,7 @@
 
                 /*palmShadow = new THREE.ShadowMesh(object);*/
                 if(object.position.y > (waterLevel + 70)) {
-                    terrainMesh.add(object);
+                    groundMesh.add(object);
                  /*   terrainMesh.add(palmShadow);*/
                 }
 
@@ -481,7 +516,7 @@
                 var randz = radius * (2 * Math.random() - 1);
 
                 object.position.set(randx, randy, randz);
-                object.position.y = terrainMesh.getHeightAtPoint(object.position);
+                object.position.y = groundMesh.getHeightAtPoint(object.position);
                 /*object.position.y -= bbox.min.y;*/
 
                 object.name = "Tropical plant";
@@ -490,7 +525,7 @@
                 object.receiveShadows = true;
 
                 if (object.position.y > (waterLevel + 70)) {
-                    terrainMesh.add(object);
+                    groundMesh.add(object);
                 }
 
 
@@ -533,8 +568,8 @@
             spriteGeom.vertices.push(new THREE.Vector3(randx, 1000, randz));
             myPalm = new THREE.Points(spriteGeom, palmSprite);
             myPalm.sortParticles = true;
-            myPalm.y = terrainMesh.getHeightAtPoint(myPalm.position);
-            terrainMesh.add(myPalm);
+            myPalm.y = groundMesh.getHeightAtPoint(myPalm.position);
+            groundMesh.add(myPalm);
 
             j++;
         }
@@ -636,11 +671,16 @@
 
 </script>
 
-<img src="textures/heightmapIsland4.jpeg" id="heightmap" hidden/>
+<img src="textures/heightmapIsland4.jpeg" id="groundmap" hidden/>
+<img src="textures/mountainmap.jpeg" id="mountainmap" hidden/>
+<img src="textures/lavamap.jpeg" id="lavamap" hidden/>
+<img src="textures/roadheightmap2.jpeg" id="roadheightmap" hidden/>
+<img src="textures/watermap.jpg" id="watermap" hidden/>
+
 <img src="textures/junglefloortexture.jpg" id="groundtexture" hidden/>
 <img src="textures/dirtroadtexture.jpg" id="dirtroadtexture" hidden/>
 <img src="textures/watertexture.jpg" id="watertexture" hidden/>
-<img src="textures/watermap.jpg" id="watermap" hidden/>
+
 
 
 </body>
