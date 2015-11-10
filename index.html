@@ -82,11 +82,25 @@
     var camera, controls, scene, renderer;
 
     // Probably GenerateMap
-    var terrainData, terrainMesh, terrainTexture, dirtroadMesh, waterMesh, waterData, sunMesh;
+    var terrainData, terrainMesh, terrainTexture, dirtroadMesh, waterMesh, waterData;
 
     var sunLight;
     var frameTime;
     var angle = 0.0;
+
+    var lensFlare;
+    var flareColor;
+    var textureFlare0;
+
+    var objectLoader;
+    var models;
+    var j;
+
+    var spritemodels;
+    var spriteGeom;
+    var spriteTexture;
+    var palmSprite;
+    var myPalm;
 
     // WAAAAAY too many var stuff here. Move it where it belongs (GenerateTexture for the most part)
     /*Ground texture*/
@@ -106,6 +120,9 @@
     watertexture.wrapS = THREE.RepeatWrapping;
     watertexture.wrapT = THREE.RepeatWrapping;
     watertexture.repeat.set( 64, 64 );
+
+    /*Palm texture*/
+    var texture;
 
     var worldWidth = 512, worldDepth = 512,
             worldHalfWidth = worldWidth / 2, worldHalfDepth = worldDepth / 2;
@@ -144,7 +161,7 @@
         sunLight = new DayNightCycle.sunLight();
 
         sunLight.name = 'sun';
-        sunLight.object3d.position.set(10000, 5000, 10000);
+        sunLight.object3d.position.set(10000, 10000, 10000);
 
         sunLight.object3d.castShadow = true;
         sunLight.object3d.shadowCameraVisible = true;
@@ -155,7 +172,7 @@
         sunLight.object3d.shadowMapHeight = 512;
 
         //directionalLight.shadowCameraNear = 5;
-        sunLight.object3d.shadowCameraFar = 40000;
+        sunLight.object3d.shadowCameraFar = 10000;
         //directionalLight.shadowCameraFov = 360;
 
         var d = 15000;
@@ -171,18 +188,26 @@
         scene.add( sunLight.object3d );
         scene.add(new THREE.DirectionalLightHelper(sunLight.object3d, 100));
 
-        var sunGeometry	= new THREE.SphereGeometry( 200, 300, 300 );
-        var sunMaterial	= new THREE.MeshBasicMaterial({
-            color		: 0xff0000
-        });
-        sunMesh	= new THREE.Mesh(sunGeometry, sunMaterial);
 
-        scene.add(sunMesh);
-        sunMesh.position.x = sunLight.object3d.position.x;
-        sunMesh.position.y = sunLight.object3d.position.y;
-        sunMesh.position.z = sunLight.object3d.position.z;
+        textureFlare0 = THREE.ImageUtils.loadTexture("textures/solarFlare.png");
+        textureFlare0.transparent = true;
+        textureFlare0.opacity = 1.0;
+        textureFlare0.minFilter = THREE.NearestFilter;
 
-        //
+        flareColor = new THREE.Color(0xffaacc);
+        lensFlare = new THREE.LensFlare(textureFlare0, 350, 0.0, THREE.AdditiveBlending, flareColor);
+
+        lensFlare.add(textureFlare0, 60, 0.6, THREE.AdditiveBlending);
+        lensFlare.add(textureFlare0, 70, 0.7, THREE.AdditiveBlending);
+        lensFlare.add(textureFlare0, 120, 0.9, THREE.AdditiveBlending);
+        lensFlare.add(textureFlare0, 70, 1.0, THREE.AdditiveBlending);
+
+        lensFlare.position.set(sunLight.object3d.position.x, sunLight.object3d.position.y, sunLight.object3d.position.z);
+        //lensFlare.position.set(10000, 20000, 20000);
+        //lensFlare.position = sunLight.object3d.position;
+
+        scene.add(lensFlare);
+
         // Height map generation/extraction
         // Needs to move to GenerateMap
         //
@@ -214,18 +239,20 @@
         // This need to move to GenerateMap
         //
 
+
         var heightMapGeometry = new HeightMapBufferGeometry(terrainData, worldWidth, worldDepth);
         // We scale the geometry to avoid scaling the node, since scales propagate.
         heightMapGeometry.scale(50*worldWidth, 4500, 50*worldDepth);
 
-        var dirtroadGeometry = new HeightMapBufferGeometry(terrainData, worldWidth, worldDepth);
-        dirtroadGeometry.scale(40*worldWidth, 1000, 40*worldDepth);
+/*        var dirtroadGeometry = new HeightMapBufferGeometry(terrainData, worldWidth, worldDepth);
+        dirtroadGeometry.scale(40*worldWidth, 1000, 40*worldDepth);*/
 
+        var terrainMaterial = new THREE.MeshLambertMaterial( { map: groundtexture } );
 
-        terrainMesh = new HeightMapMesh( heightMapGeometry, new THREE.MeshLambertMaterial( { map: groundtexture } ) );
+        terrainMesh = new HeightMapMesh( heightMapGeometry,  terrainMaterial);
         terrainMesh.name = "terrain";
 
-        terrainMesh.castShadow = true;
+        //terrainMesh.castShadow = true;
         terrainMesh.receiveShadows = true;
 
         scene.add( terrainMesh );
@@ -351,8 +378,9 @@
         var center = new THREE.Vector3(0,0,0);
         var radius = 50 * worldHalfWidth;
 
-        var texture = new THREE.Texture();
+        texture = new THREE.Texture();
         var texture2 = new THREE.Texture();
+
 
         // Guessing the start of generating objects is here, make a function and move it
         var manager = new THREE.LoadingManager();
@@ -364,18 +392,24 @@
         var loader = new THREE.ImageLoader( manager );
         loader.load( 'resources/textures/samples/terrain/tree/palm_tree/diffuse.png', function ( image ) {
             texture.image = image;
+/*            texture.transparent = true;
+            texture.opacity = 0.01;*/
             texture.needsUpdate = true;
         } );
 
-        var objectLoader = new THREE.OBJLoader( manager );
 
-        var models = ['models/palmTrees/palm_straight.obj', 'models/palmTrees/palm_bend.obj',
+
+
+        objectLoader = new THREE.OBJLoader( manager );
+
+        models = ['models/palmTrees/palm_straight.obj', 'models/palmTrees/palm_bend.obj',
             'models/palmTrees/palm_dual.obj', 'models/palmTrees/palm_trio.obj',
             'resources/mesh/samples/terrain/plants/tropical_plant2/tropical_plant.obj' ];
 
-        var j = 0;
-        var palmShadow;
-        var plantShadow;
+        j = 0;
+/*        var palmShadow;
+
+        var plantShadow;*/
         for(var i = 0; i < numBoxes; i++) {
 
             if(j === 4) {
@@ -403,19 +437,22 @@
                 /*object.position.y -= bbox.min.y;*/
                 object.castShadow = true;
                 object.receiveShadows = true;
+/*                object.transparent = true;
+                object.opacity = 0.01;*/
 
                 object.name = "Palm";
 
-                palmShadow = new THREE.ShadowMesh(object);
+                /*palmShadow = new THREE.ShadowMesh(object);*/
                 if(object.position.y > (waterLevel + 70)) {
                     terrainMesh.add(object);
-                    terrainMesh.add(palmShadow);
+                 /*   terrainMesh.add(palmShadow);*/
                 }
 
 
             }, onProgress, onError );
             j++;
         }
+
 
         loader.load( 'resources/textures/samples/terrain/plants/tropical_plant2/diffuse.png', function ( image ) {
 
@@ -461,6 +498,59 @@
             j++;
         }
 
+
+
+        spritemodels = ["resources/textures/samples/terrain/tree/palm_tree/palm_straight.png",
+                            "resources/textures/samples/terrain/tree/palm_tree/palm_dual.png",
+                            "resources/textures/samples/terrain/tree/palm_tree/palm_bend.png",
+                            "resources/textures/samples/terrain/tree/palm_tree/palm_bend_dual.png",
+                            "resources/textures/samples/terrain/tree/palm_tree/palm_trio.png"
+                        ];
+
+        spriteGeom = new THREE.Geometry();
+
+
+        for(var i = 0; i < numBoxes; i++) {
+
+            spriteTexture = THREE.ImageUtils.loadTexture( spritemodels[4] );
+            spriteTexture.minFilter = THREE.NearestFilter;
+            if(j === 4) {
+                j = 0;
+            }
+            var randx = radius * (2 * Math.random() - 1);
+            var randy = radius * (2 * Math.random() - 1);
+            var randz = radius * (2 * Math.random() - 1);
+
+
+            palmSprite = new THREE.PointsMaterial({
+                size: 200,
+                sizeAttenuation: true,
+                map: spriteTexture,
+                transparent: true,
+                color: 0XFFFFFF
+            });
+
+            spriteGeom.vertices.push(new THREE.Vector3(randx, 1000, randz));
+            myPalm = new THREE.Points(spriteGeom, palmSprite);
+            myPalm.sortParticles = true;
+            myPalm.y = terrainMesh.getHeightAtPoint(myPalm.position);
+            terrainMesh.add(myPalm);
+
+            j++;
+        }
+        //myPalm.position.set(100, terrainMesh.getHeightAtPoint(myPalm.position), 100);
+/*        terrainMesh.add(palmSprite);
+        palmSprite.position.set()*/
+
+/*        var testMat = new THREE.MeshBasicMaterial({color:0xFF0000});
+        var test = new THREE.SphereGeometry();
+        var testMesh = new THREE.Mesh(test, testMat);
+        terrainMesh.add(testMesh);
+        testMesh.scale.set(100, 100, 100);
+        testMesh.position.set(100, 10500, 100);
+        testMesh.position.y = terrainMesh.getHeightAtPoint(testMesh.position) + 6000;
+        testMesh.castShadow = true;*/
+
         var instancedMaterial = new THREE.ShaderMaterial( {
             uniforms: {
                 color: { type: "c" , value: new THREE.Color(Math.random(), Math.random(), Math.random()) }
@@ -479,12 +569,13 @@
         // Seen this done better, cleaner. We need to do this
         //
 
-        renderer = new THREE.WebGLRenderer();
+        renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true } );
         renderer.setClearColor( 0xbfd1e5 );
         renderer.setPixelRatio( window.devicePixelRatio );
         renderer.setSize( window.innerWidth, window.innerHeight );
+        renderer.autoClear = false;
 
-        renderer.shadowMapEnabled = true;
+        renderer.shadowMap.enabled = true;
         renderer.shadowMap.type = THREE.PCFSoftShadowMap;
         renderer.shadowDarkness = 1.0;
         container.innerHTML = "";
@@ -516,8 +607,7 @@
         angle +=0.009;
         sunLight.update(angle);
 
-        sunMesh.position.y = Math.sin(angle) * 1500;
-        sunMesh.position.z = Math.cos(angle) * 1500;
+        lensFlare.position.set(sunLight.object3d.position.x, sunLight.object3d.position.y, sunLight.object3d.position.z);
 
         render();
         stats.update();
@@ -526,6 +616,8 @@
 
     function render() {
         controls.update( clock.getDelta() );
+
+        renderer.clear();
         renderer.render( scene, camera );
     }
 
@@ -538,6 +630,8 @@
         }
     }
 
+
+
     function onError( xhr ) {}
 
 </script>
@@ -547,6 +641,7 @@
 <img src="textures/dirtroadtexture.jpg" id="dirtroadtexture" hidden/>
 <img src="textures/watertexture.jpg" id="watertexture" hidden/>
 <img src="textures/watermap.jpg" id="watermap" hidden/>
+
 
 </body>
 <
