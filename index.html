@@ -31,7 +31,8 @@
 <script src="src/GenerateMap.js"></script>
 <script src="src/GenerateObjects.js"></script>
 <script src="src/GenerateTexture.js"></script>
-
+<script src="src/Mirror.js"></script> 
+<script src="src/Water.js"></script>
 
 <script id="instanced-vshader" type="x-shader/x-vertex">
 		// Other attributes and uniforms are supposed to be filled in by Three.js
@@ -87,7 +88,8 @@
             lavaData, lavaMesh, lavaTexture,
             roadData, roadMesh, roadTexture,
             waterMesh, waterData;
-
+    var water; 
+    var mirrorMesh;
     var sunLight;
     var frameTime;
     var angle = 0.0;
@@ -147,6 +149,16 @@
     window.onload = function() {
         init();
         animate();
+    };
+
+    var parameters = { 
+        width: 2000, 
+        height: 2000, 
+        widthSegments: 250, 
+        heightSegments: 250, 
+        depth: 1500, 
+        param: 4, 
+        filterparam: 1 
     };
 
     function init() {
@@ -305,7 +317,7 @@
 
         waterMesh.recieveShadows = true;
 
-        scene.add(waterMesh);
+//        scene.add(waterMesh);
         waterMesh.position.y -= 976;
         var waterLevel = waterMesh.position.y + 976;
 
@@ -674,6 +686,28 @@
 
         window.addEventListener( 'resize', onWindowResize, false );
 
+        //Water
+        var waterNormals = new THREE.ImageUtils.loadTexture( 'textures/waternormals.jpg' ); 
+        waterNormals.wrapS = waterNormals.wrapT = THREE.RepeatWrapping;  
+        water = new THREE.Water( renderer, camera, scene, { 
+            textureWidth: 512, 
+            textureHeight: 512, 
+            waterNormals: waterNormals, 
+            alpha: 	1.0, 
+            sunDirection:  ambientLight.position.clone().normalize(), 
+            sunColor: 0xffffff, 
+            waterColor: 0x001e0f, 
+            distortionScale: 50.0, 
+        } );   
+        mirrorMesh = new THREE.Mesh( 
+                new THREE.PlaneBufferGeometry(parameters.width * 500, parameters.height * 500 ), 
+                water.material 
+        );  
+
+        mirrorMesh.add( water ); 
+        mirrorMesh.rotation.x = - Math.PI * 0.5; 
+        scene.add( mirrorMesh ); 
+        mirrorMesh.position.y += 20 ;
     }
 
     function onWindowResize() {
@@ -687,23 +721,22 @@
     // Should change it
     function animate() {
 
-        requestAnimationFrame( animate );
+        requestAnimationFrame( animate );          angle +=0.0001; 
+        //sunLight.update(angle); 
+        water.material.uniforms.time.value += angle; 
+        lensFlare.position.set(sunLight.object3d.position.x, sunLight.object3d.position.y, sunLight.object3d.position.z);  
 
-        angle +=0.009;
-        sunLight.update(angle);
-
-        lensFlare.position.set(sunLight.object3d.position.x, sunLight.object3d.position.y, sunLight.object3d.position.z);
-
-        render();
+        render(); 
         stats.update();
 
     }
 
     function render() {
-        controls.update( clock.getDelta() );
-
-        renderer.clear();
-        renderer.render( scene, camera );
+        //        renderer.clear(); //nullstiller alle fargebuffere etc 
+        controls.update(clock.getDelta());
+          //        controls.update(); 
+        water.render(); 
+        renderer.render( scene, camera ); 
     }
 
     // Do we use onProgress and onError
@@ -730,8 +763,6 @@
 <img src="textures/junglefloortexture.jpg" id="groundtexture" hidden/>
 <img src="textures/dirtroadtexture.jpg" id="dirtroadtexture" hidden/>
 <img src="textures/watertexture.jpg" id="watertexture" hidden/>
-
-
 
 </body>
 </html>
