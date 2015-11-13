@@ -154,7 +154,7 @@
 
         container = document.getElementById('container');
 
-        camera = new THREE.PerspectiveCamera(60, window.innerWidth / window.innerHeight, 1, 20000);
+        camera = new THREE.PerspectiveCamera(60, window.innerWidth / window.innerHeight, 1, 300000);
         camera.name = 'camera';
 
         scene = new THREE.Scene();
@@ -298,7 +298,7 @@
         scene.add(roadMesh);
 
         var waterGeometry = new HeightMapBufferGeometry(waterData, worldWidth, worldDepth);
-        waterGeometry.scale(50*worldWidth, 1000, 50*worldDepth);
+        waterGeometry.scale(100*worldWidth, 1000, 100*worldDepth);
 
         waterMesh = new HeightMapMesh(waterGeometry, new THREE.MeshLambertMaterial({ map: watertexture}));
         waterMesh.name = "water";
@@ -393,6 +393,7 @@
         camera.position.y = groundMesh.getHeightAtPoint(camera.position) + 500;
 
        /* sunLight.object3d.lookAt(camera);*/
+
 
         var boxGeom = new THREE.BoxGeometry(100, 100, 100);
         var customBox = new THREE.Mesh(boxGeom);
@@ -626,11 +627,12 @@
         var mat = new THREE.MeshBasicMaterial({envMap : textureCube, side: THREE.BackSide});
 
         // create skybox mesh
-        var skybox = new THREE.Mesh(new THREE.BoxGeometry(worldWidth*100, 15000, worldDepth*100), mat);
+        var skybox = new THREE.Mesh(new THREE.BoxGeometry(300000, 400000, 300000), mat);
         skybox.doubleSided = true;
 //        var scene = new THREE.Scene();
 
         groundMesh.add(skybox);
+        //REIDUN! SE HER!!!
 
 
 //        var renderer = new THREE.WebGLRenderer({ antialias: true});
