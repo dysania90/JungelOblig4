@@ -179,7 +179,7 @@
         sunLight.object3d.position.set(10000, 10000, 10000);
 
         sunLight.object3d.castShadow = true;
-        sunLight.object3d.shadowCameraVisible = true;
+        //sunLight.object3d.shadowCameraVisible = true;
 
         sunLight.object3d.castShadow = true;
 
@@ -199,6 +199,7 @@
         sunLight.object3d.shadowDarkness = 0.5;
 
         sunLight.shadowCameraVisible = true;
+
 
         scene.add( sunLight.object3d );
         scene.add(new THREE.DirectionalLightHelper(sunLight.object3d, 100));
@@ -278,7 +279,7 @@
         var mountainGeometry = new HeightMapBufferGeometry(mountainData, worldWidth, worldDepth);
         mountainGeometry.scale(50*worldWidth, 4500, 50*worldDepth);
 
-        mountainMesh = new HeightMapMesh( mountainGeometry, new THREE.MeshBasicMaterial( { map: mountaintexture } ) );
+        mountainMesh = new HeightMapMesh( mountainGeometry, new THREE.MeshLambertMaterial( { map: mountaintexture } ) );
         mountainMesh.name = "mountain";
         scene.add(mountainMesh);
 
@@ -292,7 +293,7 @@
         var roadGeometry = new HeightMapBufferGeometry(roadData, worldWidth, worldDepth);
         roadGeometry.scale(50*worldWidth, 4500, 50*worldDepth);
 
-        roadMesh = new HeightMapMesh( roadGeometry, new THREE.MeshBasicMaterial( { map: dirtroadtexture } ) );
+        roadMesh = new HeightMapMesh( roadGeometry, new THREE.MeshLambertMaterial( { map: dirtroadtexture } ) );
         roadMesh.name = "dirtroad";
         scene.add(roadMesh);
 
@@ -391,6 +392,8 @@
         camera.position.z = 3000;
         camera.position.y = groundMesh.getHeightAtPoint(camera.position) + 500;
 
+       /* sunLight.object3d.lookAt(camera);*/
+
         var boxGeom = new THREE.BoxGeometry(100, 100, 100);
         var customBox = new THREE.Mesh(boxGeom);
 
@@ -472,8 +475,8 @@
                 /*object.position.y -= bbox.min.y;*/
                 object.castShadow = true;
                 object.receiveShadows = true;
-/*                object.transparent = true;
-                object.opacity = 0.01;*/
+                object.transparent = true;
+                object.opacity = 0.01;
 
                 object.name = "Palm";
 
