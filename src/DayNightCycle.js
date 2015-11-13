@@ -1,7 +1,7 @@
 /**
  * Created by Kristoffer on 02/11/2015.
  */
-DayNightCycle = {}
+DayNightCycle = {};
 
 // Need to find a way to make movement of light work
 
@@ -19,7 +19,7 @@ DayNightCycle.sunLight = function  (){
         light.position.z = -Math.cos(sunAngle) * 10000;
 
     }
-}
+};
 
 /////////////////////////////////////////////
 //              Sun object                //
@@ -40,11 +40,12 @@ DayNightCycle.sunObject = function () {
     }
 
 
-}
+};
 
 /////////////////////////////////////////////
 //                 Skybox                 //
 ///////////////////////////////////////////
 
-DayNightCycle.Skybox = function () {}
-// Karianne do this
+DayNightCycle.Skybox = function () {
+
+};

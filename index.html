@@ -14,17 +14,15 @@
 <script src="bower_components/three.js/build/three.min.js"></script>
 <script src="bower_components/three.js/build/three.js"></script>
 <script src="bower_components/three.js/examples/js/loaders/OBJLoader.js"></script>
-
 <script src="bower_components/three.js/examples/js/loaders/DDSLoader.js"></script>
 <script src="bower_components/three.js/examples/js/loaders/MTLLoader.js"></script>
 <script src="bower_components/three.js/examples/js/loaders/OBJMTLLoader.js"></script>
-
 <script src="bower_components/three.js/examples/js/controls/FirstPersonControls.js"></script>
-
+<script src="bower_components/three.js/examples/js/controls/OrbitControls.js"></script>
 <script src="bower_components/three.js/examples/js/ImprovedNoise.js"></script>
 <script src="bower_components/three.js/examples/js/Detector.js"></script>
 <script src="bower_components/three.js/examples/js/libs/stats.min.js"></script>
-
+<script src="bower_components/three.js/examples/js/libs/dat.gui.min.js"></script>
 <script src="bower_components/three.js/examples/js/objects/ShadowMesh.js"></script>
 
 <script src="src/HeightMapGeometry.js"></script>
@@ -43,15 +41,15 @@
         // we're going to draw a slightly different one.
 		attribute vec3 translate;
 
-		varying vec2 vUv;
+		varying vec2 vUV;
 
 		void main() {
 
-			vec4 mvPosition = modelViewMatrix * vec4( translate + position, 1.0 );
+			<!--vec4 mvPosition = modelViewMatrix * vec4( translate + position, 1.0 );-->
+            vec4 pos = vec4(position, 1.0);
+			vUV = uv;
 
-			vUv = uv;
-
-			gl_Position = projectionMatrix * mvPosition;
+			gl_Position = projectionMatrix * modelViewMatrix * pos;
 
 		}
 
@@ -61,11 +59,13 @@
         // Other attributes and uniforms are supposed to be filled in by Three.js
 		// To avoid it being filled in automatically, use RawShaderMaterial
 
-           uniform vec3 color;
+           uniform sampler2D texture;
+           varying vec2 vUV;
+           <!--uniform vec3 color;-->
 
 		void main() {
-
-			gl_FragColor = vec4(color, 1.0);
+            vec4 sample = texture2D(texture, vUV);
+			gl_FragColor = vec4(sample.xyz, sample.w);
 
 		}
 </script>
@@ -600,6 +600,50 @@
         var instancedBox = new THREE.Mesh(instancedBoxGeom, instancedMaterial);
         instancedBox.name = "instancedBox";
 
+        /////////////SKYBOX
+        var urlPrefix = 'textures/';
+        var urls = [ urlPrefix + 'sea_negx.jpg',
+            urlPrefix + 'sea_posx.jpg',
+            urlPrefix + 'sea_negy.jpg',
+            urlPrefix + 'sea_posy.jpg',
+            urlPrefix + 'sea_negz.jpg',
+            urlPrefix + 'sea_posz.jpg' ];
+        var textureCube = THREE.ImageUtils.loadTextureCube(urls);
+        textureCube.format = THREE.RGBFormat;
+
+        var shader = THREE.ShaderLib['cube']; // init cube shader from built-in lib
+        shader.uniforms['tCube'].value = textureCube; // apply textures to shader
+
+        // create shader material
+        var skyBoxMaterial = new THREE.ShaderMaterial({
+            fragmentShader : shader.fragmentShader,
+            vertexShader : shader.vertexShader,
+            uniforms : shader.uniforms,
+            depthWrite : false,
+            side : THREE.BackSide
+        });
+
+        var mat = new THREE.MeshBasicMaterial({envMap : textureCube, side: THREE.BackSide});
+
+        // create skybox mesh
+        var skybox = new THREE.Mesh(new THREE.BoxGeometry(worldWidth*100, 15000, worldDepth*100), mat);
+        skybox.doubleSided = true;
+//        var scene = new THREE.Scene();
+
+        groundMesh.add(skybox);
+
+
+//        var renderer = new THREE.WebGLRenderer({ antialias: true});
+//        renderer.setSize(window.innerWidth, window.innerHeight);
+//        document.getElementById('canvas').appendChild(renderer.domElement);
+//    var camera = new THREE.PerspectiveCamera();
+//    camera.position.x = 0;
+//    camera.position.y = 0;
+//    camera.position.z = 5;
+//    camera.lookAt(scene.position);
+
+//        window.setInterval(render, 10);
+
         //terrainMesh.add(instancedBox);
 
         //
@@ -687,4 +731,4 @@
 
 
 </body>
-<
+</html>
