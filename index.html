@@ -83,18 +83,30 @@
     var camera, controls, scene, renderer;
 
     // Probably GenerateMap
-    var groundData, groundMesh, groundTexture,
-            mountainData, mountainMesh, mountainTexture,
-            lavaData, lavaMesh, lavaTexture,
-            roadData, roadMesh, roadTexture,
-            beachData, beachMesh, beachTexture,
-            waterMesh, waterData;
+    var groundData, groundMesh, groundTexture, groundMapImage, groundGeometry,
+            mountainData, mountainMesh, mountainTexture, mountainMapImage, mountainGeometry,
+            lavaData, lavaMesh, lavaTexture,lavaMapImage, lavaGeometry,
+            beachData, beachMesh, beachTexture, beachMapImage, beachGeometry;
 
     var water; 
-    var mirrorMesh;
+    var waterMesh;
     var sunLight;
     var frameTime;
     var angle = 0.0;
+
+    var urlPrefix;
+    var urls;
+    var textureCube;
+    var shader;
+    var skyBoxMaterial;
+    var mat;
+    var skyBox;
+
+    var randomPoints;
+    var randx;
+    var randy;
+    var randz;
+    var bbox;
 
     var lensFlare;
     var flareColor;
@@ -104,53 +116,37 @@
     var models;
     var j;
 
-    var spritemodels;
+    var spriteModels;
     var spriteGeom;
     var spriteTexture;
     var palmSprite;
     var myPalm;
 
+    var waterLevel;
+
+    var waterNormals;
+    var count;
+    var splineCurve;
+    var splineGeometry;
+    var irregularMaterial;
+    var splineCurveObject;
+    var boxGeom;
+    var customBox;
+    var numBoxes;
+    var center;
+    var radius;
+    var instancedMaterial;
+    var instancedBox;
+    var instancedBoxGeom;
     // WAAAAAY too many var stuff here. Move it where it belongs (GenerateTexture for the most part)
     /*Ground texture*/
-    var groundtexture = THREE.ImageUtils.loadTexture( "textures/grounddirttexture.jpg" );
-    groundtexture.wrapS = THREE.RepeatWrapping;
-    groundtexture.wrapT = THREE.RepeatWrapping;
-    groundtexture.repeat.set( 256, 256 );
 
-    var mountaintexture = THREE.ImageUtils.loadTexture( "textures/mountaintexture.jpg" );
-    mountaintexture.minFilter = THREE.NearestFilter;
-    mountaintexture.wrapS = THREE.RepeatWrapping;
-    mountaintexture.wrapT = THREE.RepeatWrapping;
-    mountaintexture.repeat.set( 64, 64 );
+      /*Palm texture*/
+    var palmTexture;
+    var plantTexture;
 
-    var lavatexture = THREE.ImageUtils.loadTexture( "textures/lavatexture.jpg" );
-    lavatexture.wrapS = THREE.RepeatWrapping;
-    lavatexture.wrapT = THREE.RepeatWrapping;
-    lavatexture.repeat.set( 64, 64);
-
-    /*Dirt road texture*/
-    var dirtroadtexture = THREE.ImageUtils.loadTexture("textures/dirtroadtexture.jpg");
-    dirtroadtexture.wrapS = THREE.RepeatWrapping;
-    dirtroadtexture.wrapT = THREE.RepeatWrapping;
-    dirtroadtexture.repeat.set( 64, 64 );
-
-    /*Beach texture*/
-    var beachtexture = THREE.ImageUtils.loadTexture("textures/sandtexture.jpg");
-    beachtexture.wrapS = THREE.RepeatWrapping;
-    beachtexture.wrapT = THREE.RepeatWrapping;
-    beachtexture.repeat.set( 64, 64 );
-
-    /*Water texture*/
-    var watertexture = THREE.ImageUtils.loadTexture("textures/watertexture.jpg");
-    watertexture.wrapS = THREE.RepeatWrapping;
-    watertexture.wrapT = THREE.RepeatWrapping;
-    watertexture.repeat.set( 64, 64 );
-
-    /*Palm texture*/
-    var texture;
-
-    var worldWidth = 512, worldDepth = 512,
-            worldHalfWidth = worldWidth / 2, worldHalfDepth = worldDepth / 2;
+    var worldWidth, worldHeight ,
+            worldHalfWidth, worldHalfHeight;
 
     var clock = new THREE.Clock();
 
@@ -181,8 +177,37 @@
         scene.fog = new THREE.FogExp2(0XFFFFFF, 0.0000085);
 
         controls = new THREE.FirstPersonControls(camera);
-        controls.movementSpeed = 1000;
+        controls.movementSpeed = 1500;
         controls.lookSpeed = 0.1;
+
+        var manager = new THREE.LoadingManager();
+        manager.onProgress = function ( item, loaded, total ) {
+
+            console.log( item, loaded, total );
+        };
+
+        var loader = new THREE.ImageLoader( manager );
+
+        ///////////////////////////////////////////////////////
+        //                      Renderer                    //
+        /////////////////////////////////////////////////////
+        renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true } );
+        renderer.setClearColor( 0xbfd1e5 );
+        renderer.setPixelRatio( window.devicePixelRatio );
+        renderer.setSize( window.innerWidth, window.innerHeight );
+        renderer.autoClear = false;
+
+        renderer.shadowMap.enabled = true;
+        renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+        renderer.shadowDarkness = 1.0;
+        container.innerHTML = "";
+
+        container.appendChild( renderer.domElement );
+
+        stats = new Stats();
+        stats.domElement.style.position = 'absolute';
+        stats.domElement.style.top = '0px';
+        container.appendChild( stats.domElement );
 
         ///////////////////////////////////////////////////////
         //                      Lights                      //
@@ -225,7 +250,6 @@
         scene.add( sunLight.object3d );
         scene.add(new THREE.DirectionalLightHelper(sunLight.object3d, 100));
 
-
         textureFlare0 = THREE.ImageUtils.loadTexture("textures/solarFlare.png");
         textureFlare0.transparent = true;
         textureFlare0.opacity = 1.0;
@@ -249,99 +273,148 @@
         // Needs to move to GenerateMap
         //
 
-        var useRandomHeightMap = false;
 
-        if (useRandomHeightMap) {
-            groundData = GenerateMap.generateHeight( worldWidth, worldDepth );
-        } else {
-            var groundImage = document.getElementById('groundmap');
-            groundData = GenerateMap.getPixelValues(groundImage, 'r');
-            worldWidth = groundImage.width;
-            worldDepth = groundImage.height;
-            worldHalfWidth = Math.floor(worldWidth / 2);
-            worldHalfDepth = Math.floor(worldDepth / 2);
-        }
-
-        var mountainMapImage = document.getElementById('mountainmap');
-        mountainData = GenerateMap.getPixelValues(mountainMapImage, 'r');
-
-        var lavaMapImage = document.getElementById('lavamap');
-        lavaData = GenerateMap.getPixelValues(lavaMapImage, 'r');
-
-        var roadMapImage = document.getElementById('roadheightmap');
-        roadData = GenerateMap.getPixelValues(roadMapImage, 'r');
-
-        var beachMapImage = document.getElementById('beachmap');
-        beachData = GenerateMap.getPixelValues(beachMapImage, 'r');
-
-        var waterMapImage = document.getElementById('watermap');
-        waterData = GenerateMap.getPixelValues(waterMapImage, 'r');
-
-
-
+        ///////////////////////////////////////////////////////
+        //                      Meshes                      //
+        /////////////////////////////////////////////////////
 
         //
-        // Generate terrain geometry and mesh
         // This need to move to GenerateMap
         //
 
+        //Ground
+        groundMapImage = document.getElementById('groundmap');
+        groundData = GenerateMap.getPixelValues(groundMapImage, 'r');
 
-        var groundGeometry = new HeightMapBufferGeometry(groundData, worldWidth, worldDepth);
-        // We scale the geometry to avoid scaling the node, since scales propagate.
-        groundGeometry.scale(50*worldWidth, 4500, 50*worldDepth);
+        worldWidth = groundMapImage.width;
+        worldHeight = groundMapImage.height;
+        worldHalfWidth = Math.floor(worldWidth / 2);
+        worldHalfHeight = Math.floor(worldHeight / 2);
 
-        var groundMaterial = new THREE.MeshLambertMaterial( { map: groundtexture } );
+        groundGeometry = new HeightMapBufferGeometry(groundData, worldWidth, worldHeight);
+        groundGeometry.scale(50*worldWidth, 4500, 50*worldHeight);
 
-        groundMesh = new HeightMapMesh( groundGeometry,  groundMaterial);
+        groundTexture = THREE.ImageUtils.loadTexture( "textures/groundDirtTexture.jpg" );
+        groundTexture.wrapS = groundTexture.wrapT = THREE.RepeatWrapping;
+        groundTexture.repeat.set( 256, 256 );
+
+        groundMesh = new HeightMapMesh( groundGeometry,  new THREE.MeshLambertMaterial( { map: groundTexture } ));
         groundMesh.name = "terrain";
         groundMesh.receiveShadows = true;
         scene.add( groundMesh );
 
-        var mountainGeometry = new HeightMapBufferGeometry(mountainData, worldWidth, worldDepth);
-        mountainGeometry.scale(50*worldWidth, 4500, 50*worldDepth);
+        //Mountain
+        mountainMapImage = document.getElementById('mountainmap');
+        mountainData = GenerateMap.getPixelValues(mountainMapImage, 'r');
 
-        mountainMesh = new HeightMapMesh( mountainGeometry, new THREE.MeshLambertMaterial( { map: mountaintexture } ) );
+        mountainGeometry = new HeightMapBufferGeometry(mountainData, worldWidth, worldHeight);
+        mountainGeometry.scale(50*worldWidth, 4500, 50*worldHeight);
+
+        mountainTexture = THREE.ImageUtils.loadTexture( "textures/mountainTexture.jpg" );
+        mountainTexture.wrapS = mountainTexture.wrapT = THREE.RepeatWrapping;
+        mountainTexture.repeat.set( 64, 64 );
+
+        mountainMesh = new HeightMapMesh( mountainGeometry, new THREE.MeshLambertMaterial( { map: mountainTexture } ) );
         mountainMesh.name = "mountain";
-        scene.add(mountainMesh);
+        groundMesh.add(mountainMesh);
 
-        var lavaGeometry = new HeightMapBufferGeometry(lavaData, worldWidth, worldDepth);
-        lavaGeometry.scale(50*worldWidth, 4500, 50*worldDepth);
+        //Lava
+        lavaMapImage = document.getElementById('lavamap');
+        lavaData = GenerateMap.getPixelValues(lavaMapImage, 'r');
 
-        lavaMesh = new HeightMapMesh( lavaGeometry, new THREE.MeshBasicMaterial( { map: lavatexture } ) );
+        lavaGeometry = new HeightMapBufferGeometry(lavaData, worldWidth, worldHeight);
+        lavaGeometry.scale(50*worldWidth, 4500, 50*worldHeight);
+
+        lavaTexture = THREE.ImageUtils.loadTexture( "textures/lavaTexture.jpg" );
+        lavaTexture.wrapS = lavaTexture.wrapT = THREE.RepeatWrapping;
+        lavaTexture.repeat.set( 64, 64 );
+
+        lavaMesh = new HeightMapMesh( lavaGeometry, new THREE.MeshBasicMaterial( { map: lavaTexture } ) );
         lavaMesh.name = "lava";
-        scene.add(lavaMesh);
+        groundMesh.add(lavaMesh);
 
-        var roadGeometry = new HeightMapBufferGeometry(roadData, worldWidth, worldDepth);
-        roadGeometry.scale(50*worldWidth, 4500, 50*worldDepth);
+        //Beach
+        beachMapImage = document.getElementById('beachmap');
+        beachData = GenerateMap.getPixelValues(beachMapImage, 'r');
 
-        roadMesh = new HeightMapMesh( roadGeometry, new THREE.MeshLambertMaterial( { map: dirtroadtexture } ) );
-        roadMesh.name = "dirtroad";
-        //scene.add(roadMesh);
+        beachGeometry = new HeightMapBufferGeometry(beachData, worldWidth, worldHeight);
+        beachGeometry.scale(50*worldWidth, 4500, 50*worldHeight);
 
-        var beachGeometry = new HeightMapBufferGeometry(beachData, worldWidth, worldDepth);
-        beachGeometry.scale(50*worldWidth, 4500, 50*worldDepth);
+        beachTexture = THREE.ImageUtils.loadTexture( "textures/beachTexture.jpg" );
+        beachTexture.wrapS = beachTexture.wrapT = THREE.RepeatWrapping;
+        beachTexture.repeat.set( 64, 64 );
 
-        beachMesh = new HeightMapMesh( beachGeometry, new THREE.MeshLambertMaterial( { map: beachtexture } ) );
+        beachMesh = new HeightMapMesh( beachGeometry, new THREE.MeshLambertMaterial( { map: beachTexture } ) );
         beachMesh.name = "beach";
-        scene.add(beachMesh);
+        groundMesh.add(beachMesh);
 
-        var waterGeometry = new HeightMapBufferGeometry(waterData, worldWidth, worldDepth);
-        waterGeometry.scale(100*worldWidth, 1000, 100*worldDepth);
+        //Water
 
-        waterMesh = new HeightMapMesh(waterGeometry, new THREE.MeshLambertMaterial({ map: watertexture}));
-        waterMesh.name = "water";
+        waterNormals = new THREE.ImageUtils.loadTexture( 'textures/waternormals.jpg' );
+        waterNormals.wrapS = waterNormals.wrapT = THREE.RepeatWrapping;
+        water = new THREE.Water( renderer, camera, scene, {
+            textureWidth: 512,
+            textureHeight: 512,
+            waterNormals: waterNormals,
+            alpha: 	1.0,
+            sunDirection:  ambientLight.position.clone().normalize(),
+            sunColor: 0xffffff,
+            waterColor: 0x001e0f,
+            distortionScale: 50.0,
+        } );
+        waterMesh = new THREE.Mesh(
+                new THREE.PlaneBufferGeometry(parameters.width * 500, parameters.height * 500 ),
+                water.material
+        );
 
-        waterMesh.recieveShadows = true;
+        water.opacity = 0.5;
+        waterMesh.add( water );
+        waterMesh.rotation.x = - Math.PI * 0.5;
+        waterMesh.position.y += 70;
+        scene.add( waterMesh );
 
-//        scene.add(waterMesh);
-        waterMesh.position.y -= 976;
-        var waterLevel = waterMesh.position.y + 976;
+        waterLevel = waterMesh.position.y;
+
+        /////////////SKYBOX
+        urlPrefix = 'textures/';
+        urls = [ urlPrefix + 'sea_negx.jpg',
+            urlPrefix + 'sea_neutral.jpg',
+            urlPrefix + 'sea_negy.jpg',
+            urlPrefix + 'sea_posy.jpg',
+            urlPrefix + 'sea_negz.jpg',
+            urlPrefix + 'sea_posz.jpg' ];
 
 
+        textureCube = THREE.ImageUtils.loadTextureCube(urls);
+        textureCube.format = THREE.RGBFormat;
+
+
+        shader = THREE.ShaderLib['cube']; // init cube shader from built-in lib
+        shader.uniforms['tCube'].value = textureCube; // apply textures to shader
+
+
+        // create shader material
+        skyBoxMaterial = new THREE.ShaderMaterial({
+            fragmentShader : shader.fragmentShader,
+            vertexShader : shader.vertexShader,
+            uniforms : shader.uniforms,
+            depthWrite : false,
+            side : THREE.BackSide
+        });
+
+
+        mat = new THREE.MeshBasicMaterial({envMap : textureCube, side: THREE.BackSide});
+
+        // create skybox mesh
+        skyBox = new THREE.Mesh(new THREE.BoxGeometry(300000, 400000, 300000), mat);
+        skyBox.doubleSided = true;
+
+
+        groundMesh.add(skyBox);
 
         /*Irregulaert formet spline-kurve*/
         // Move this to MovementAndCamera and make it work!
-        var randomPoints = [];
+        randomPoints = [];
 
         /*
         var num = 10;
@@ -358,7 +431,8 @@
         var negate = -2;
          */
 
-        var count = 1000;
+
+                count = 1000;
         /*
         for(var i = 0; i < count; i++) {
             randomPoints.push(new THREE.Vector3(-count+(i*2), 1000, count-(i*7)));
@@ -388,18 +462,20 @@
              }*/
         }
 
-        var splineCurve = new THREE.CatmullRomCurve3(randomPoints);
 
-        var geometry = new THREE.Geometry();
-        geometry.vertices = splineCurve.getPoints(2000);
+        splineCurve = new THREE.CatmullRomCurve3(randomPoints);
+
+        splineGeometry = new THREE.Geometry();
+        splineGeometry.vertices = splineCurve.getPoints(2000);
 
         /*  for(var i = 0; i < 1000; i++) {
             geometry.vertices[i].y = terrainMesh.getHeightAtPoint(geometry.vertices[i]);
         }   */
 
-        var irregularMaterial = new THREE.LineBasicMaterial( {color: 0x0000ff} );
 
-        var splineCurveObject = new THREE.Line(geometry, irregularMaterial);
+        irregularMaterial = new THREE.LineBasicMaterial( {color: 0x0000ff} );
+
+        splineCurveObject = new THREE.Line(splineGeometry, irregularMaterial);
         scene.add(splineCurveObject);
 
         splineCurveObject.position.set(1000,100,1000);
@@ -423,8 +499,9 @@
        /* sunLight.object3d.lookAt(camera);*/
 
 
-        var boxGeom = new THREE.BoxGeometry(100, 100, 100);
-        var customBox = new THREE.Mesh(boxGeom);
+
+        boxGeom = new THREE.BoxGeometry(100, 100, 100);
+        customBox = new THREE.Mesh(boxGeom);
 
         groundMesh.add(customBox);
         customBox.position.setY(groundMesh.getHeightAtPoint(customBox.position));
@@ -437,31 +514,24 @@
         //
 
         // Make a buffer that can use instanced attributes
-        var instancedBoxGeom = new THREE.InstancedBufferGeometry();
+        instancedBoxGeom = new THREE.InstancedBufferGeometry();
         // Copy geometry from a standard box.
         instancedBoxGeom.fromGeometry(new THREE.BoxGeometry(100, 100, 100));
 
-        var numBoxes = 10;
-        var center = new THREE.Vector3(0,0,0);
-        var radius = 50 * worldHalfWidth;
+        numBoxes = 10;
+        center = new THREE.Vector3(0,0,0);
+        radius = 50 * worldHalfWidth;
 
-        texture = new THREE.Texture();
-        var texture2 = new THREE.Texture();
-
+        palmTexture = new THREE.Texture();
+        plantTexture = new THREE.Texture();
 
         // Guessing the start of generating objects is here, make a function and move it
-        var manager = new THREE.LoadingManager();
-        manager.onProgress = function ( item, loaded, total ) {
 
-            console.log( item, loaded, total );
-        };
-
-        var loader = new THREE.ImageLoader( manager );
         loader.load( 'resources/textures/samples/terrain/tree/palm_tree/diffuse.png', function ( image ) {
-            texture.image = image;
+            palmTexture.image = image;
 /*            texture.transparent = true;
             texture.opacity = 0.01;*/
-            texture.needsUpdate = true;
+            palmTexture.needsUpdate = true;
         } );
 
 
@@ -488,16 +558,17 @@
 
                     if ( child instanceof THREE.Mesh ) {
 
-                        child.material.map = texture;
+                        child.material.map = palmTexture;
 
                     }
 
                 } );
 
-                var bbox = new THREE.Box3().setFromObject(object);
-                var randx = radius * (2*Math.random() - 1);
-                var randy = radius * (2*Math.random() - 1);
-                var randz = radius * (2*Math.random() - 1);
+
+                bbox = new THREE.Box3().setFromObject(object);
+                randx = radius * (2*Math.random() - 1);
+                randy = radius * (2*Math.random() - 1);
+                randz = radius * (2*Math.random() - 1);
 
                 object.position.set(randx, randy, randz);
                 object.position.y = groundMesh.getHeightAtPoint(object.position);
@@ -523,8 +594,8 @@
 
         loader.load( 'resources/textures/samples/terrain/plants/tropical_plant2/diffuse.png', function ( image ) {
 
-            texture2.image = image;
-            texture2.needsUpdate = true;
+            plantTexture.image = image;
+            plantTexture.needsUpdate = true;
 
         } );
 
@@ -536,16 +607,16 @@
 
                     if (child instanceof THREE.Mesh) {
 
-                        child.material.map = texture2;
+                        child.material.map = plantTexture;
 
                     }
 
                 });
 
-                var bbox = new THREE.Box3().setFromObject(object);
-                var randx = radius * (2 * Math.random() - 1);
-                var randy = radius * (2 * Math.random() - 1);
-                var randz = radius * (2 * Math.random() - 1);
+                bbox = new THREE.Box3().setFromObject(object);
+                randx = radius * (2 * Math.random() - 1);
+                randy = radius * (2 * Math.random() - 1);
+                randz = radius * (2 * Math.random() - 1);
 
                 object.position.set(randx, randy, randz);
                 object.position.y = groundMesh.getHeightAtPoint(object.position);
@@ -567,7 +638,7 @@
 
 
 
-        spritemodels = ["resources/textures/samples/terrain/tree/palm_tree/palm_straight.png",
+        spriteModels = ["resources/textures/samples/terrain/tree/palm_tree/palm_straight.png",
                             "resources/textures/samples/terrain/tree/palm_tree/palm_dual.png",
                             "resources/textures/samples/terrain/tree/palm_tree/palm_bend.png",
                             "resources/textures/samples/terrain/tree/palm_tree/palm_bend_dual.png",
@@ -579,14 +650,15 @@
 
         for(var i = 0; i < numBoxes; i++) {
 
-            spriteTexture = THREE.ImageUtils.loadTexture( spritemodels[4] );
+            spriteTexture = THREE.ImageUtils.loadTexture( spriteModels[4] );
             spriteTexture.minFilter = THREE.NearestFilter;
             if(j === 4) {
                 j = 0;
             }
-            var randx = radius * (2 * Math.random() - 1);
-            var randy = radius * (2 * Math.random() - 1);
-            var randz = radius * (2 * Math.random() - 1);
+
+            randx = radius * (2 * Math.random() - 1);
+            randy = radius * (2 * Math.random() - 1);
+            randz = radius * (2 * Math.random() - 1);
 
 
             palmSprite = new THREE.PointsMaterial({
@@ -618,7 +690,8 @@
         testMesh.position.y = terrainMesh.getHeightAtPoint(testMesh.position) + 6000;
         testMesh.castShadow = true;*/
 
-        var instancedMaterial = new THREE.ShaderMaterial( {
+
+        instancedMaterial = new THREE.ShaderMaterial( {
             uniforms: {
                 color: { type: "c" , value: new THREE.Color(Math.random(), Math.random(), Math.random()) }
             },
@@ -626,106 +699,10 @@
             fragmentShader: document.getElementById("fshader").textContent
         } );
 
-        var instancedBox = new THREE.Mesh(instancedBoxGeom, instancedMaterial);
+        instancedBox = new THREE.Mesh(instancedBoxGeom, instancedMaterial);
         instancedBox.name = "instancedBox";
 
-        /////////////SKYBOX
-        var urlPrefix = 'textures/';
-        var urls = [ urlPrefix + 'sea_negx.jpg',
-            urlPrefix + 'sea_neutral.jpg',
-            urlPrefix + 'sea_negy.jpg',
-            urlPrefix + 'sea_posy.jpg',
-            urlPrefix + 'sea_negz.jpg',
-            urlPrefix + 'sea_posz.jpg' ];
-        var textureCube = THREE.ImageUtils.loadTextureCube(urls);
-        textureCube.format = THREE.RGBFormat;
-
-        var shader = THREE.ShaderLib['cube']; // init cube shader from built-in lib
-        shader.uniforms['tCube'].value = textureCube; // apply textures to shader
-
-        // create shader material
-        var skyBoxMaterial = new THREE.ShaderMaterial({
-            fragmentShader : shader.fragmentShader,
-            vertexShader : shader.vertexShader,
-            uniforms : shader.uniforms,
-            depthWrite : false,
-            side : THREE.BackSide
-        });
-
-        var mat = new THREE.MeshBasicMaterial({envMap : textureCube, side: THREE.BackSide});
-
-        // create skybox mesh
-        var skybox = new THREE.Mesh(new THREE.BoxGeometry(300000, 400000, 300000), mat);
-        skybox.doubleSided = true;
-//        var scene = new THREE.Scene();
-
-        groundMesh.add(skybox);
-        //REIDUN! SE HER!!!
-        //REEEEEEEEIIIIIDDUUUUUUUUUUUUNNN!!!
-
-
-//        var renderer = new THREE.WebGLRenderer({ antialias: true});
-//        renderer.setSize(window.innerWidth, window.innerHeight);
-//        document.getElementById('canvas').appendChild(renderer.domElement);
-//    var camera = new THREE.PerspectiveCamera();
-//    camera.position.x = 0;
-//    camera.position.y = 0;
-//    camera.position.z = 5;
-//    camera.lookAt(scene.position);
-
-//        window.setInterval(render, 10);
-
-        //terrainMesh.add(instancedBox);
-
-        //
-        // Set up renderer
-        // Seen this done better, cleaner. We need to do this
-        //
-
-        renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true } );
-        renderer.setClearColor( 0xbfd1e5 );
-        renderer.setPixelRatio( window.devicePixelRatio );
-        renderer.setSize( window.innerWidth, window.innerHeight );
-        renderer.autoClear = false;
-
-        renderer.shadowMap.enabled = true;
-        renderer.shadowMap.type = THREE.PCFSoftShadowMap;
-        renderer.shadowDarkness = 1.0;
-        container.innerHTML = "";
-
-        container.appendChild( renderer.domElement );
-
-        stats = new Stats();
-        stats.domElement.style.position = 'absolute';
-        stats.domElement.style.top = '0px';
-        container.appendChild( stats.domElement );
-
         window.addEventListener( 'resize', onWindowResize, false );
-
-        //Water
-        var waterNormals = new THREE.ImageUtils.loadTexture( 'textures/waternormals.jpg' ); 
-        waterNormals.wrapS = waterNormals.wrapT = THREE.RepeatWrapping;  
-        water = new THREE.Water( renderer, camera, scene, { 
-            textureWidth: 512, 
-            textureHeight: 512, 
-            waterNormals: waterNormals, 
-            alpha: 	1.0, 
-            sunDirection:  ambientLight.position.clone().normalize(), 
-            sunColor: 0xffffff, 
-            waterColor: 0x001e0f, 
-            distortionScale: 50.0, 
-        } );   
-        mirrorMesh = new THREE.Mesh( 
-                new THREE.PlaneBufferGeometry(parameters.width * 500, parameters.height * 500 ), 
-                water.material 
-        );  
-
-        water.opacity = 0.5;
-        mirrorMesh.add( water ); 
-        mirrorMesh.rotation.x = - Math.PI * 0.5;
-        mirrorMesh.position.y += 70;
-        scene.add( mirrorMesh ); 
-
     }
 
     function onWindowResize() {
@@ -772,16 +749,10 @@
 
 </script>
 
-<img src="textures/heightmapIsland6.jpeg" id="groundmap" hidden/>
-<img src="textures/mountainmap.jpeg" id="mountainmap" hidden/>
-<img src="textures/lavamap.jpeg" id="lavamap" hidden/>
-<img src="textures/roadheightmap3.jpeg" id="roadheightmap" hidden/>
-<img src="textures/beachmap.jpeg" id="beachmap" hidden/>
-<img src="textures/watermap.jpg" id="watermap" hidden/>
-
-<img src="textures/grounddirttexture.jpg" id="groundtexture" hidden/>
-<img src="textures/dirtroadtexture.jpg" id="dirtroadtexture" hidden/>
-<img src="textures/watertexture.jpg" id="watertexture" hidden/>
+<img src="textures/groundMap.jpeg" id="groundmap" hidden/>
+<img src="textures/mountainMap.jpeg" id="mountainmap" hidden/>
+<img src="textures/lavaMap.jpeg" id="lavamap" hidden/>
+<img src="textures/beachMap.jpeg" id="beachmap" hidden/>
 
 </body>
 </html>
