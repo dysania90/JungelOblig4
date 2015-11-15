@@ -87,7 +87,9 @@
             mountainData, mountainMesh, mountainTexture,
             lavaData, lavaMesh, lavaTexture,
             roadData, roadMesh, roadTexture,
+            beachData, beachMesh, beachTexture,
             waterMesh, waterData;
+
     var water; 
     var mirrorMesh;
     var sunLight;
@@ -131,6 +133,12 @@
     dirtroadtexture.wrapS = THREE.RepeatWrapping;
     dirtroadtexture.wrapT = THREE.RepeatWrapping;
     dirtroadtexture.repeat.set( 64, 64 );
+
+    /*Beach texture*/
+    var beachtexture = THREE.ImageUtils.loadTexture("textures/sandtexture.jpg");
+    beachtexture.wrapS = THREE.RepeatWrapping;
+    beachtexture.wrapT = THREE.RepeatWrapping;
+    beachtexture.repeat.set( 64, 64 );
 
     /*Water texture*/
     var watertexture = THREE.ImageUtils.loadTexture("textures/watertexture.jpg");
@@ -260,17 +268,17 @@
         var lavaMapImage = document.getElementById('lavamap');
         lavaData = GenerateMap.getPixelValues(lavaMapImage, 'r');
 
+        var roadMapImage = document.getElementById('roadheightmap');
+        roadData = GenerateMap.getPixelValues(roadMapImage, 'r');
+
+        var beachMapImage = document.getElementById('beachmap');
+        beachData = GenerateMap.getPixelValues(beachMapImage, 'r');
+
         var waterMapImage = document.getElementById('watermap');
         waterData = GenerateMap.getPixelValues(waterMapImage, 'r');
 
-        var roadMapImage = document.getElementById('roadheightmap');
-        roadData = GenerateMap.getPixelValues(roadMapImage, 'r');
-        // Not required to use the generated texture
-        // Where do we generate textures? Seems to be spread out. Needs to clump it together and
-        // move to own file (GenerateTexture)
-/*        terrainTexture = new THREE.CanvasTexture( GenerateTexture.generateTexture( terrainData, worldWidth, worldDepth ) );
-        terrainTexture.wrapS = THREE.ClampToEdgeWrapping;
-        terrainTexture.wrapT = THREE.ClampToEdgeWrapping;*/
+
+
 
         //
         // Generate terrain geometry and mesh
@@ -309,6 +317,13 @@
         roadMesh = new HeightMapMesh( roadGeometry, new THREE.MeshLambertMaterial( { map: dirtroadtexture } ) );
         roadMesh.name = "dirtroad";
         //scene.add(roadMesh);
+
+        var beachGeometry = new HeightMapBufferGeometry(beachData, worldWidth, worldDepth);
+        beachGeometry.scale(50*worldWidth, 4500, 50*worldDepth);
+
+        beachMesh = new HeightMapMesh( beachGeometry, new THREE.MeshLambertMaterial( { map: beachtexture } ) );
+        beachMesh.name = "beach";
+        scene.add(beachMesh);
 
         var waterGeometry = new HeightMapBufferGeometry(waterData, worldWidth, worldDepth);
         waterGeometry.scale(100*worldWidth, 1000, 100*worldDepth);
@@ -724,7 +739,7 @@
     // Should change it
     function animate() {
 
-        requestAnimationFrame( animate );          angle +=0.0001; 
+        requestAnimationFrame( animate );          angle +=0.00001; 
         //sunLight.update(angle); 
         water.material.uniforms.time.value += angle; 
         lensFlare.position.set(sunLight.object3d.position.x, sunLight.object3d.position.y, sunLight.object3d.position.z);  
@@ -761,6 +776,7 @@
 <img src="textures/mountainmap.jpeg" id="mountainmap" hidden/>
 <img src="textures/lavamap.jpeg" id="lavamap" hidden/>
 <img src="textures/roadheightmap3.jpeg" id="roadheightmap" hidden/>
+<img src="textures/beachmap.jpeg" id="beachmap" hidden/>
 <img src="textures/watermap.jpg" id="watermap" hidden/>
 
 <img src="textures/grounddirttexture.jpg" id="groundtexture" hidden/>
