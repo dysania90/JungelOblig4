@@ -110,16 +110,16 @@
 
     // WAAAAAY too many var stuff here. Move it where it belongs (GenerateTexture for the most part)
     /*Ground texture*/
-    var groundtexture = THREE.ImageUtils.loadTexture( "textures/junglefloortexture.jpg" );
+    var groundtexture = THREE.ImageUtils.loadTexture( "textures/grounddirttexture.jpg" );
     groundtexture.wrapS = THREE.RepeatWrapping;
     groundtexture.wrapT = THREE.RepeatWrapping;
     groundtexture.repeat.set( 256, 256 );
 
     var mountaintexture = THREE.ImageUtils.loadTexture( "textures/mountaintexture.jpg" );
     mountaintexture.minFilter = THREE.NearestFilter;
-    groundtexture.wrapS = THREE.RepeatWrapping;
-    groundtexture.wrapT = THREE.RepeatWrapping;
-    /*groundtexture.repeat.set( 32, 32 );*/
+    mountaintexture.wrapS = THREE.RepeatWrapping;
+    mountaintexture.wrapT = THREE.RepeatWrapping;
+    mountaintexture.repeat.set( 64, 64 );
 
     var lavatexture = THREE.ImageUtils.loadTexture( "textures/lavatexture.jpg" );
     lavatexture.wrapS = THREE.RepeatWrapping;
@@ -170,6 +170,7 @@
         camera.name = 'camera';
 
         scene = new THREE.Scene();
+        scene.fog = new THREE.FogExp2(0XFFFFFF, 0.0000085);
 
         controls = new THREE.FirstPersonControls(camera);
         controls.movementSpeed = 1000;
@@ -307,7 +308,7 @@
 
         roadMesh = new HeightMapMesh( roadGeometry, new THREE.MeshLambertMaterial( { map: dirtroadtexture } ) );
         roadMesh.name = "dirtroad";
-        scene.add(roadMesh);
+        //scene.add(roadMesh);
 
         var waterGeometry = new HeightMapBufferGeometry(waterData, worldWidth, worldDepth);
         waterGeometry.scale(100*worldWidth, 1000, 100*worldDepth);
@@ -616,7 +617,7 @@
         /////////////SKYBOX
         var urlPrefix = 'textures/';
         var urls = [ urlPrefix + 'sea_negx.jpg',
-            urlPrefix + 'sea_posx.jpg',
+            urlPrefix + 'sea_neutral.jpg',
             urlPrefix + 'sea_negy.jpg',
             urlPrefix + 'sea_posy.jpg',
             urlPrefix + 'sea_negz.jpg',
@@ -704,10 +705,12 @@
                 water.material 
         );  
 
+        water.opacity = 0.5;
         mirrorMesh.add( water ); 
-        mirrorMesh.rotation.x = - Math.PI * 0.5; 
+        mirrorMesh.rotation.x = - Math.PI * 0.5;
+        mirrorMesh.position.y += 70;
         scene.add( mirrorMesh ); 
-        mirrorMesh.position.y += 20 ;
+
     }
 
     function onWindowResize() {
@@ -754,13 +757,13 @@
 
 </script>
 
-<img src="textures/heightmapIsland4.jpeg" id="groundmap" hidden/>
+<img src="textures/heightmapIsland6.jpeg" id="groundmap" hidden/>
 <img src="textures/mountainmap.jpeg" id="mountainmap" hidden/>
 <img src="textures/lavamap.jpeg" id="lavamap" hidden/>
-<img src="textures/roadheightmap2.jpeg" id="roadheightmap" hidden/>
+<img src="textures/roadheightmap3.jpeg" id="roadheightmap" hidden/>
 <img src="textures/watermap.jpg" id="watermap" hidden/>
 
-<img src="textures/junglefloortexture.jpg" id="groundtexture" hidden/>
+<img src="textures/grounddirttexture.jpg" id="groundtexture" hidden/>
 <img src="textures/dirtroadtexture.jpg" id="dirtroadtexture" hidden/>
 <img src="textures/watertexture.jpg" id="watertexture" hidden/>
 
