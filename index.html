@@ -108,6 +108,9 @@
     var randz;
     var bbox;
 
+    var manager;
+    var loader;
+
     var lensFlare;
     var flareColor;
     var textureFlare0;
@@ -180,13 +183,13 @@
         controls.movementSpeed = 1500;
         controls.lookSpeed = 0.1;
 
-        var manager = new THREE.LoadingManager();
+        manager = new THREE.LoadingManager();
         manager.onProgress = function ( item, loaded, total ) {
 
             console.log( item, loaded, total );
         };
 
-        var loader = new THREE.ImageLoader( manager );
+        loader = new THREE.ImageLoader( manager );
 
         ///////////////////////////////////////////////////////
         //                      Renderer                    //
