@@ -378,6 +378,14 @@
 
         waterLevel = waterMesh.position.y;
 
+        // AUDIO
+        var listener = new THREE.AudioListener();
+        scene.add(listener);
+        var audio = new THREE.Audio(listener);
+        audio.load('audio/rainforest.mp3');
+        audio.autoplay = true;
+        scene.add(audio);
+
         /////////////SKYBOX
         urlPrefix = 'textures/';
         urls = [ urlPrefix + 'sea_negx.jpg',
