@@ -24,12 +24,15 @@ var materialA = new THREE.SpriteMaterial( { map: grassTextureA} );
 var materialB = new THREE.SpriteMaterial( { map: grassTextureB} );
 var materialC = new THREE.SpriteMaterial( { map: grassTextureC} );
 
+var amount, radius;
+
 GenerateObjects.billboard = function () {
 
 
-    var amount = 300;
-    var radius = 5500;
+    amount = 300;
+    radius = 5500;
     var j = 0;
+
     for ( var a = 0; a < amount; a ++ ) {
         if (j == 3) {
             j = 0;
@@ -89,18 +92,21 @@ GenerateObjects.palms2D = function () {
         "resources/textures/samples/terrain/tree/palm_tree/palm_trio.png"
     ];
 
+    amount = 20;
+    radius = 2000;
+
     spriteGeom = new THREE.Geometry();
 
 
-    for(var i = 0; i < numBoxes; i++) {
+    for(var i = 0; i < amount; i++) {
 
         spriteTexture = THREE.ImageUtils.loadTexture( spriteModels[0] );
         spriteTexture.minFilter = THREE.NearestFilter;
+
         if(j === 4) {
             j = 0;
         }
 
-        radius = 800;
         randx = radius * (2 * Math.random() - 1);
         randy = radius * (2 * Math.random() - 1);
         randz = radius * (2 * Math.random() - 1);
@@ -145,8 +151,10 @@ GenerateObjects.palms3D = function () {
         'resources/mesh/samples/terrain/plants/tropical_plant2/tropical_plant.obj' ];
 
     j = 0;
+    amount = 30;
+    radius = 20000;
 
-    for(var i = 0; i < numBoxes; i++) {
+    for(var i = 0; i < amount; i++) {
 
         if(j === 4) {
             j = 0;
@@ -157,7 +165,9 @@ GenerateObjects.palms3D = function () {
 
                 if ( child instanceof THREE.Mesh ) {
 
-                    child.material.map = palmTexture;
+                    child.material = new THREE.MeshLambertMaterial({
+                        map:palmTexture, transparency:true, alphaTest: 0.75
+                    });
 
                 }
 
@@ -171,12 +181,13 @@ GenerateObjects.palms3D = function () {
 
             object.position.set(randx, randy, randz);
             object.position.y = groundMesh.getHeightAtPoint(object.position);
-            /*object.position.y -= bbox.min.y;*/
-            object.castShadow = true;
+            object.position.y -= bbox.min.y;
+                     /* object.castShadow = true;
             object.receiveShadows = true;
             object.transparent = true;
-            object.opacity = 0.01;
-
+            object.opacity = 0.01;*/
+            /*object.transparent = true;*/
+            object.scale.set(10,10,10);
             object.name = "Palm";
             object.boundingBox = bbox;
 
@@ -193,6 +204,8 @@ GenerateObjects.palms3D = function () {
 GenerateObjects.plants3D = function () {
 
     objectLoader = new THREE.OBJLoader( manager );
+    amount = 30;
+    radius = 2000;
 
     loader.load( 'resources/textures/samples/terrain/plants/tropical_plant2/diffuse.png', function ( image ) {
 
@@ -209,7 +222,10 @@ GenerateObjects.plants3D = function () {
 
                 if (child instanceof THREE.Mesh) {
 
-                    child.material.map = plantTexture;
+                    child.material = new THREE.MeshLambertMaterial({
+                        map:plantTexture, transparency:true, alphaTest: 0.75
+                    });
+
 
                 }
 
@@ -226,8 +242,10 @@ GenerateObjects.plants3D = function () {
 
             object.name = "Tropical plant";
 
-            object.castShadow = true;
-            object.receiveShadows = true;
+/*            object.castShadow = true;
+            object.receiveShadows = true;*/
+
+            object.scale.set(5,5,5);
 
             if (object.position.y > (waterLevel + 70)) {
                 groundMesh.add(object);
@@ -240,7 +258,6 @@ GenerateObjects.plants3D = function () {
 };
 
 //Make function to add objects easier
-
 
 
 

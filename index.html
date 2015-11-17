@@ -89,7 +89,7 @@
     // Probably GenerateMap
     var groundData, groundMesh, groundTexture, groundMapImage, groundGeometry,
             mountainData, mountainMesh, mountainTexture, mountainMapImage, mountainGeometry,
-            lavaData, lavaMesh, lavaTexture,lavaMapImage, lavaGeometry,
+            lavaMesh, lavaTexture,lavaGeometry,
             beachData, beachMesh, beachTexture, beachMapImage, beachGeometry;
 
     var water; 
@@ -273,7 +273,7 @@
         textureFlare0 = THREE.ImageUtils.loadTexture("textures/solarFlare.png");
         textureFlare0.transparent = true;
         textureFlare0.opacity = 1.0;
-        textureFlare0.minFilter = THREE.NearestFilter;
+        textureFlare0.minFilter = THREE.LinearMipMapLinearFilter;
 
         flareColor = new THREE.Color(0xffaacc);
         lensFlare = new THREE.LensFlare(textureFlare0, 350, 0.0, THREE.AdditiveBlending, flareColor);
@@ -330,6 +330,8 @@
         groundTexture = THREE.ImageUtils.loadTexture( "textures/groundDirtTexture.jpg" );
         groundTexture.wrapS = groundTexture.wrapT = THREE.RepeatWrapping;
         groundTexture.repeat.set( 256, 256 );
+        groundTexture.magFilter = THREE.NearestFilter;
+        groundTexture.minFilter = THREE.LinearMipMapLinearFilter;
 
         groundMesh = new HeightMapMesh( groundGeometry,  new THREE.MeshLambertMaterial( { map: groundTexture } ));
         groundMesh.name = "terrain";
@@ -346,25 +348,24 @@
         mountainTexture = THREE.ImageUtils.loadTexture( "textures/mountainTexture.jpg" );
         mountainTexture.wrapS = mountainTexture.wrapT = THREE.RepeatWrapping;
         mountainTexture.repeat.set( 64, 64 );
+        mountainTexture.magFilter = THREE.NearestFilter;
+        mountainTexture.minFilter = THREE.LinearMipMapLinearFilter;
 
         mountainMesh = new HeightMapMesh( mountainGeometry, new THREE.MeshLambertMaterial( { map: mountainTexture } ) );
         mountainMesh.name = "mountain";
         groundMesh.add(mountainMesh);
 
         //Lava
-        lavaMapImage = document.getElementById('lavamap');
-        lavaData = GenerateMap.getPixelValues(lavaMapImage, 'r');
-
-        lavaGeometry = new HeightMapBufferGeometry(lavaData, worldWidth, worldHeight);
-        lavaGeometry.scale(50*worldWidth, 4500, 50*worldHeight);
-
         lavaTexture = THREE.ImageUtils.loadTexture( "textures/lavaTexture.jpg" );
         lavaTexture.wrapS = lavaTexture.wrapT = THREE.RepeatWrapping;
-        lavaTexture.repeat.set( 64, 64 );
+/*        lavaTexture.repeat.set( 64, 64 );*/
 
-        lavaMesh = new HeightMapMesh( lavaGeometry, new THREE.MeshBasicMaterial( { map: lavaTexture } ) );
-        lavaMesh.name = "lava";
-        groundMesh.add(lavaMesh);
+        lavaGeometry = new THREE.CircleGeometry(700, 1000);
+        lavaMesh = new THREE.Mesh(lavaGeometry,new THREE.MeshLambertMaterial({side: THREE.DoubleSide, map: lavaTexture}));
+
+        lavaMesh.position.set(2457, 3118, -7502);
+        lavaMesh.rotation.x = Math.PI /2;
+        scene.add(lavaMesh);
 
         //Beach
         beachMapImage = document.getElementById('beachmap');
@@ -376,6 +377,8 @@
         beachTexture = THREE.ImageUtils.loadTexture( "textures/beachTexture.jpg" );
         beachTexture.wrapS = beachTexture.wrapT = THREE.RepeatWrapping;
         beachTexture.repeat.set( 64, 64 );
+        beachTexture.magFilter = THREE.NearestFilter;
+        beachTexture.minFilter = THREE.LinearMipMapLinearFilter;
 
         beachMesh = new HeightMapMesh( beachGeometry, new THREE.MeshLambertMaterial( { map: beachTexture } ) );
         beachMesh.name = "beach";
@@ -385,6 +388,8 @@
 
         waterNormals = new THREE.ImageUtils.loadTexture( 'textures/waternormals.jpg' );
         waterNormals.wrapS = waterNormals.wrapT = THREE.RepeatWrapping;
+
+
         water = new THREE.Water( renderer, camera, scene, {
             textureWidth: 512,
             textureHeight: 512,
@@ -555,14 +560,16 @@
         radius = 50 * worldHalfWidth;
 
         palmTexture = new THREE.Texture();
+        palmTexture.wrapS = palmTexture.wrapT = THREE.RepeatWrapping;
         plantTexture = new THREE.Texture();
         shipTexture = new THREE.Texture();
 
         GenerateObjects.billboard();
-        GenerateObjects.palms2D();
+        /*GenerateObjects.palms2D();*/
         GenerateObjects.palms3D();
         GenerateObjects.plants3D();
         GenerateObjects.ship();
+
 
         instancedMaterial = new THREE.ShaderMaterial( {
             uniforms: {
@@ -641,7 +648,6 @@
 
 <img src="textures/groundMap.jpeg" id="groundmap" hidden/>
 <img src="textures/mountainMap.jpeg" id="mountainmap" hidden/>
-<img src="textures/lavaMap.jpeg" id="lavamap" hidden/>
 <img src="textures/beachMap.jpeg" id="beachmap" hidden/>
 
 </body>
