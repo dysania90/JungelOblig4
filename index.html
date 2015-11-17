@@ -367,6 +367,14 @@
         lavaMesh.rotation.x = Math.PI /2;
         scene.add(lavaMesh);
 
+
+        /*var lavaBubbleGeom = new THREE.SphereGeometry(100, 1000, 1000);
+        var lavaBubbleMesh = new THREE.Mesh(lavaBubbleGeom, new THREE.MeshLambertMaterial({map: lavaTexture}));
+
+        lavaBubbleMesh.scale(10,10,10);
+        lavaMesh.position.set(2457, 3118, -7502);
+        scene.add(lavaBubbleMesh);*/
+
         //Beach
         beachMapImage = document.getElementById('beachmap');
         beachData = GenerateMap.getPixelValues(beachMapImage, 'r');
@@ -536,12 +544,14 @@
         customBox = new THREE.Mesh(boxGeom);
 
         groundMesh.add(customBox);
-        customBox.position.setY(groundMesh.getHeightAtPoint(customBox.position));
+        //customBox.position.setY(groundMesh.getHeightAtPoint(customBox.position));
 
         customBox2 = new THREE.Mesh(boxGeom);
-        customBox2.position.set(-4900,0, 3900);
+        customBox2.position.x = -4900;
+        customBox2.position.z = 3900;
+
         groundMesh.add(customBox2);
-        customBox2.position.setY(groundMesh.getHeightAtPoint(customBox2.position)+ 200) ;
+       customBox2.position.setY(groundMesh.getHeightAtPoint(customBox2.position)) ;
 
         //
         // Generate random positions for some number of boxes
@@ -566,7 +576,12 @@
 
         GenerateObjects.billboard();
         /*GenerateObjects.palms2D();*/
-        GenerateObjects.palms3D();
+        /*GenerateObjects.palms3D();*/
+
+        GenerateObjects.palms3D(customBox, 10, 1000);
+
+        GenerateObjects.palms3D(customBox2, 20, 1000);
+
         GenerateObjects.plants3D();
         GenerateObjects.ship();
 
@@ -603,6 +618,7 @@
         water.material.uniforms.time.value += angle; 
         lensFlare.position.set(sunLight.object3d.position.x, sunLight.object3d.position.y, sunLight.object3d.position.z);
 
+        lavaMesh.rotation.z += 0.01;
         x = camera.position.x;
         y = camera.position.y;
         z = camera.position.z;

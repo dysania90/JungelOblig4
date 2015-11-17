@@ -134,7 +134,7 @@ GenerateObjects.palms2D = function () {
      palmSprite.position.set()*/
 };
 
-GenerateObjects.palms3D = function () {
+GenerateObjects.palms3D = function (parent, am, rad) {
 
     loader.load( 'resources/textures/samples/terrain/tree/palm_tree/diffuse.png', function ( image ) {
         palmTexture.image = image;
@@ -151,9 +151,10 @@ GenerateObjects.palms3D = function () {
         'resources/mesh/samples/terrain/plants/tropical_plant2/tropical_plant.obj' ];
 
     j = 0;
-    amount = 30;
-    radius = 20000;
+    amount = am;
+    radius = rad;
 
+    var forest = new THREE.Object3D();
     for(var i = 0; i < amount; i++) {
 
         if(j === 4) {
@@ -174,12 +175,15 @@ GenerateObjects.palms3D = function () {
             } );
 
 
-            bbox = new THREE.Box3().setFromObject(object);
+
             randx = radius * (2*Math.random() - 1);
             randy = radius * (2*Math.random() - 1);
             randz = radius * (2*Math.random() - 1);
 
+            bbox = new THREE.Box3().setFromObject(object);
             object.position.set(randx, randy, randz);
+
+
             object.position.y = groundMesh.getHeightAtPoint(object.position);
             object.position.y -= bbox.min.y;
                      /* object.castShadow = true;
@@ -189,16 +193,20 @@ GenerateObjects.palms3D = function () {
             /*object.transparent = true;*/
             object.scale.set(10,10,10);
             object.name = "Palm";
-            object.boundingBox = bbox;
+            /*object.boundingBox = bbox;*/
+            bbox2 = new THREE.BoundingBoxHelper(object, 0xFF0000);
+            bbox2.update();
 
             if(object.position.y > (waterLevel + 70)) {
-                groundMesh.add(object);
+                parent.add(object);
+                parent.add(bbox2);
             }
 
 
         }, onProgress, onError );
         j++;
     }
+  /*  parent.add(forest);*/
 };
 
 GenerateObjects.plants3D = function () {
