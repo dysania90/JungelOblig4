@@ -4,32 +4,19 @@
 
 GenerateObjects = {}
 
-//Move placements of objects here
-
 /////////////////////////////////////////////
 //           Billboard grass              //
 ///////////////////////////////////////////
-var spriteTL, spriteTR, spriteBL, spriteBR, spriteC;
-
-var mapC;
-var sceneOrtho;
-
-var group;
 
 var grassTextureA = THREE.ImageUtils.loadTexture( "models/2Dbillboard/grass02.png" );
 var grassTextureB = THREE.ImageUtils.loadTexture( "models/2Dbillboard/grass01.png" );
 var grassTextureC = THREE.ImageUtils.loadTexture( "models/2Dbillboard/grass03.png" );
-
-
-var group;
 
 var materialA = new THREE.SpriteMaterial( { map: grassTextureA} );
 var materialB = new THREE.SpriteMaterial( { map: grassTextureB} );
 var materialC = new THREE.SpriteMaterial( { map: grassTextureC} );
 
 GenerateObjects.billboard = function () {
-
-    group = new THREE.Group();
 
     var amount = 300;
     var radius = 5500;
@@ -53,7 +40,6 @@ GenerateObjects.billboard = function () {
         groundMesh.add(sprite);
         j++;
     }
-    return group;
 };
 
 //Make function to add objects easier
