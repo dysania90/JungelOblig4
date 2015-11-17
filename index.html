@@ -590,7 +590,8 @@
     // Should change it
     function animate() {
 
-        requestAnimationFrame( animate );          angle +=0.00001; 
+        requestAnimationFrame( animate );  
+        angle +=0.00001; 
         //sunLight.update(angle); 
         water.material.uniforms.time.value += angle; 
         lensFlare.position.set(sunLight.object3d.position.x, sunLight.object3d.position.y, sunLight.object3d.position.z);
