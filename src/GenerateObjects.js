@@ -31,8 +31,8 @@ GenerateObjects.billboard = function () {
 
     group = new THREE.Group();
 
-    var amount = 200;
-    var radius = 5000;
+    var amount = 300;
+    var radius = 5500;
     var j = 0;
     for ( var a = 0; a < amount; a ++ ) {
         if (j == 3) {
