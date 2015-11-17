@@ -24,6 +24,7 @@
 <script src="bower_components/three.js/examples/js/libs/stats.min.js"></script>
 <script src="bower_components/three.js/examples/js/libs/dat.gui.min.js"></script>
 <script src="bower_components/three.js/examples/js/objects/ShadowMesh.js"></script>
+<script src="bower_components/three.js/examples/js/postprocessing/BloomPass.js"></script>
 
 <script src="src/HeightMapGeometry.js"></script>
 <script src="src/HeightMapMesh.js"></script>
@@ -78,10 +79,13 @@
         document.getElementById( 'container' ).innerHTML = "";
     }
 
-    var container, stats;
+    var container, stats, gui;
 
-    var camera, controls, scene, renderer;
+    var camera, controls, scene, renderer, composer;
 
+    var x, y, z;
+    var x2, y2, z2;
+    var flag = false;
     // Probably GenerateMap
     var groundData, groundMesh, groundTexture, groundMapImage, groundGeometry,
             mountainData, mountainMesh, mountainTexture, mountainMapImage, mountainGeometry,
@@ -175,6 +179,17 @@
         "use strict";
 
         container = document.getElementById('container');
+
+/*        gui = new DAT.GUI({
+            height : 5 * 32 - 1
+        });
+
+        var params = {
+            x:0,
+            y:0
+        };
+
+        gui.add(params, 'interation');*/
 
         camera = new THREE.PerspectiveCamera(60, window.innerWidth / window.innerHeight, 1, 300000);
         camera.name = 'camera';
@@ -278,6 +293,17 @@
         // Height map generation/extraction
         // Needs to move to GenerateMap
         //
+
+        ///////BLOOOM
+/*        var renderModel = new THREE.RenderPass( scene, camera );
+        var effectBloom = new THREE.BloomPass( 1.25 );
+        var effectFilm = new THREE.FilmPass( 0.35, 0.95, 2048, false );
+        effectFilm.renderToScreen = true;
+        composer = new THREE.EffectComposer( renderer );
+        composer.addPass( renderModel );
+        composer.addPass( effectBloom );
+        composer.addPass( effectFilm );*/
+        ////
 
 
         ///////////////////////////////////////////////////////
@@ -566,7 +592,23 @@
         requestAnimationFrame( animate );          angle +=0.00001; 
         //sunLight.update(angle); 
         water.material.uniforms.time.value += angle; 
-        lensFlare.position.set(sunLight.object3d.position.x, sunLight.object3d.position.y, sunLight.object3d.position.z);  
+        lensFlare.position.set(sunLight.object3d.position.x, sunLight.object3d.position.y, sunLight.object3d.position.z);
+
+        x = camera.position.x;
+        y = camera.position.y;
+        z = camera.position.z;
+
+
+
+        if((x2 === x) && (y2 === y) && (z2 === z) ) {
+            flag = false;
+        } else {
+            flag = true;
+        }
+
+        if(flag) {
+            console.log(Math.round(x), Math.round(y), Math.round(z) );
+        }
 
         render(); 
         stats.update();
@@ -577,6 +619,9 @@
         //        renderer.clear(); //nullstiller alle fargebuffere etc 
         controls.update(clock.getDelta());
           //        controls.update(); 
+        x2 = x;
+        y2 = y;
+        z2 = z;
         water.render(); 
         renderer.render( scene, camera ); 
     }
