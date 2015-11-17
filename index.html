@@ -267,7 +267,6 @@
 
         sunLight.shadowCameraVisible = true;
 
-
         scene.add( sunLight.object3d );
         scene.add(new THREE.DirectionalLightHelper(sunLight.object3d, 100));
 
@@ -304,6 +303,8 @@
         composer.addPass( effectBloom );
         composer.addPass( effectFilm );*/
         ////
+
+
 
 
         ///////////////////////////////////////////////////////
@@ -412,7 +413,7 @@
         scene.add(listener);
         var audio = new THREE.Audio(listener);
         audio.load('audio/rainforest.mp3');
-        audio.autoplay = true;
+        //audio.autoplay = true;
         audio.setLoop(500);
         scene.add(audio);
 
@@ -530,6 +531,7 @@
         customBox = new THREE.Mesh(boxGeom);
 
         groundMesh.add(customBox);
+        groundMesh.add(GenerateObjects.billboard());
         customBox.position.setY(groundMesh.getHeightAtPoint(customBox.position));
 
         customBox2 = new THREE.Mesh(boxGeom);
@@ -561,6 +563,9 @@
 
         generate2DPalmsAndPlants();
         generateShip();
+        GenerateObjects.billboard();
+
+        //scene.add(GenerateObjects.billboard());
 
 
         instancedMaterial = new THREE.ShaderMaterial( {
