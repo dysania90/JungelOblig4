@@ -90,7 +90,7 @@
     var skyBoxMaterial;
     var mat;
     var skyBox;
-    var randomPoints;
+    var splinePoints;
     var randx;
     var randy;
     var randz;
@@ -102,8 +102,7 @@
     var flareColor;
     var textureFlare0;
     var objectLoader;
-    var models;
-    var j;
+
     var spriteModels;
     var spriteGeom;
     var spriteTexture;
@@ -115,7 +114,7 @@
     var count;
     var splineCurve;
     var splineGeometry;
-    var irregularMaterial;
+    var splineMaterial;
     var splineCurveObject;
     var boxGeom;
     var growthPosition1;
@@ -129,9 +128,7 @@
     // WAAAAAY too many var stuff here. Move it where it belongs (GenerateTexture for the most part)
     /*Ground texture*/
     /*Palm texture*/
-    var palmTexture;
-    var plantTexture;
-    var shipTexture;
+
     var worldWidth, worldHeight ,
             worldHalfWidth, worldHalfHeight;
     var clock = new THREE.Clock();
@@ -365,20 +362,9 @@
         groundMesh.add(skyBox);
         /*Irregulaert formet spline-kurve*/
         // Move this to MovementAndCamera and make it work!
-        randomPoints = [];
-        /*
-         var num = 10;
-         for(var i = 0; i < num; i++) {
-         randomPoints.push(new THREE.Vector3(Math.random() * 4000 - 1500, Math.random()
-         * 3000 - 1500, Math.random() * 3000 - 1500));
-         }
-         for(var i = 0; i < num; i++) {
-         randomPoints[i].y = terrainMesh.getHeightAtPoint(randomPoints[i]) + 1;
-         }
-         var negate = -2;
-         */
-        count = 1000;
-        randomPoints.push(
+
+        splinePoints = [];
+        splinePoints.push(
                 new THREE.Vector3(-6055, 363, 6823),
                 new THREE.Vector3(-7410, 473, 4319),
                 new THREE.Vector3(-7325, 589, 3384),
@@ -425,27 +411,19 @@
                 new THREE.Vector3(5490, 499, 3630)
         );
 
-
-        splineCurve = new THREE.CatmullRomCurve3(randomPoints);
+        splineCurve = new THREE.CatmullRomCurve3(splinePoints);
         splineGeometry = new THREE.Geometry();
-        splineGeometry.vertices = splineCurve.getPoints(200*randomPoints.length);
+        splineGeometry.vertices = splineCurve.getPoints(200*splinePoints.length);
 
-        irregularMaterial = new THREE.LineBasicMaterial( {color: 0x0000ff} );
-        splineCurveObject = new THREE.Line(splineGeometry, irregularMaterial);
+        splineMaterial = new THREE.LineBasicMaterial( {color: 0x0000ff} );
+        splineCurveObject = new THREE.Line(splineGeometry, splineMaterial);
         scene.add(splineCurveObject);
 
         camera.position.x = -6000;
         camera.position.z = 6900;
         camera.position.y = groundMesh.getHeightAtPoint(camera.position) + 350;
-        boxGeom = new THREE.BoxGeometry(100, 100, 100);
-        growthPosition1 = new THREE.Mesh(boxGeom);
-        groundMesh.add(growthPosition1);
-        growthPosition1.position.y = groundMesh.getHeightAtPoint(growthPosition1.position);
-        growthPosition2 = new THREE.Mesh(boxGeom);
-        growthPosition2.position.x = -4900;
-        growthPosition2.position.z = 3900;
-        groundMesh.add(growthPosition2);
-        growthPosition2.position.y = groundMesh.getHeightAtPoint(growthPosition2.position);
+
+
         //
         // Generate random positions for some number of boxes
         // Used in instancing. Better examples:
@@ -453,23 +431,13 @@
         //  * http://threejs.org/examples/#webgl_buffergeometry_instancing_billboards
         //
         // Make a buffer that can use instanced attributes
-        instancedBoxGeom = new THREE.InstancedBufferGeometry();
+       /* instancedBoxGeom = new THREE.InstancedBufferGeometry();
         // Copy geometry from a standard box.
         instancedBoxGeom.fromGeometry(new THREE.BoxGeometry(100, 100, 100));
         numBoxes = 10;
         center = new THREE.Vector3(0,0,0);
         radius = 50 * worldHalfWidth;
-        palmTexture = new THREE.Texture();
-        palmTexture.wrapS = palmTexture.wrapT = THREE.RepeatWrapping;
-        plantTexture = new THREE.Texture();
-        shipTexture = new THREE.Texture();
-        GenerateObjects.billboard();
-        /*GenerateObjects.palms2D();*/
-        /*GenerateObjects.palms3D();*/
-        //GenerateObjects.palms3D(growthPosition1, 10, 1000);
-        GenerateObjects.palms3D(growthPosition2, 20, 100000);
-        GenerateObjects.plants3D();
-        GenerateObjects.ship();
+
         instancedMaterial = new THREE.ShaderMaterial( {
             uniforms: {
                 color: { type: "c" , value: new THREE.Color(Math.random(), Math.random(), Math.random()) }
@@ -479,6 +447,16 @@
         } );
         instancedBox = new THREE.Mesh(instancedBoxGeom, instancedMaterial);
         instancedBox.name = "instancedBox";
+        groundMesh.add(instancedBox);*/
+
+        GenerateObjects.billboard();
+
+        GenerateObjects.palms3D();
+
+        GenerateObjects.plants3D();
+
+        GenerateObjects.ship();
+
         window.addEventListener( 'resize', onWindowResize, false );
     }
     function onWindowResize() {
