@@ -544,14 +544,14 @@
         customBox = new THREE.Mesh(boxGeom);
 
         groundMesh.add(customBox);
-        //customBox.position.setY(groundMesh.getHeightAtPoint(customBox.position));
+
 
         customBox2 = new THREE.Mesh(boxGeom);
         customBox2.position.x = -4900;
         customBox2.position.z = 3900;
 
         groundMesh.add(customBox2);
-       customBox2.position.setY(groundMesh.getHeightAtPoint(customBox2.position)) ;
+
 
         //
         // Generate random positions for some number of boxes

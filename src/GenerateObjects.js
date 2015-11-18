@@ -184,8 +184,8 @@ GenerateObjects.palms3D = function (parent, am, rad) {
             object.position.set(randx, randy, randz);
 
 
-            object.position.y = groundMesh.getHeightAtPoint(object.position);
-            object.position.y -= bbox.min.y;
+/*            object.position.y = groundMesh.getHeightAtPoint(object.position);
+            object.position.y -= bbox.min.y;*/
                      /* object.castShadow = true;
             object.receiveShadows = true;
             object.transparent = true;
@@ -198,15 +198,17 @@ GenerateObjects.palms3D = function (parent, am, rad) {
             bbox2.update();
 
             if(object.position.y > (waterLevel + 70)) {
-                parent.add(object);
-                parent.add(bbox2);
+                forest.add(object);
+                //parent.add(bbox);
+                object.position.y = groundMesh.getHeightAtPoint(object.position);
+               // object.position.y -= bbox.min.y;
             }
 
 
         }, onProgress, onError );
         j++;
     }
-  /*  parent.add(forest);*/
+    parent.add(forest);
 };
 
 GenerateObjects.plants3D = function () {
