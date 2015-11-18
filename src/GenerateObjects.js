@@ -248,7 +248,7 @@ GenerateObjects.plants3D = function () {
 
             object.scale.set(5,5,5);
 
-            if (object.position.y > (waterLevel + 70)) {
+            if ((object.position.y > growthLowerLevel) && (object.position.y < growthUpperLevel)) {
                 groundMesh.add(object);
             }
 

@@ -268,6 +268,7 @@
         groundMesh.name = "terrain";
         groundMesh.receiveShadows = true;
         scene.add( groundMesh );
+
         //Mountain
         mountainMapImage = document.getElementById('mountainmap');
         mountainData = GenerateMap.getPixelValues(mountainMapImage, 'r');
@@ -281,6 +282,7 @@
         mountainMesh = new HeightMapMesh( mountainGeometry, new THREE.MeshLambertMaterial( { map: mountainTexture } ) );
         mountainMesh.name = "mountain";
         groundMesh.add(mountainMesh);
+
         //Lava
         lavaTexture = THREE.ImageUtils.loadTexture( "textures/lavaTexture.jpg" );
         lavaTexture.wrapS = lavaTexture.wrapT = THREE.RepeatWrapping;
@@ -290,11 +292,7 @@
         lavaMesh.position.set(2457, 3118, -7502);
         lavaMesh.rotation.x = Math.PI /2;
         scene.add(lavaMesh);
-        /*var lavaBubbleGeom = new THREE.SphereGeometry(100, 1000, 1000);
-         var lavaBubbleMesh = new THREE.Mesh(lavaBubbleGeom, new THREE.MeshLambertMaterial({map: lavaTexture}));
-         lavaBubbleMesh.scale(10,10,10);
-         lavaMesh.position.set(2457, 3118, -7502);
-         scene.add(lavaBubbleMesh);*/
+
         //Beach
         beachMapImage = document.getElementById('beachmap');
         beachData = GenerateMap.getPixelValues(beachMapImage, 'r');
@@ -308,7 +306,6 @@
         beachMesh = new HeightMapMesh( beachGeometry, new THREE.MeshLambertMaterial( { map: beachTexture } ) );
         beachMesh.name = "beach";
         scene.add(beachMesh);
-
         //Water
         waterNormals = new THREE.ImageUtils.loadTexture( 'textures/waternormals.jpg' );
         waterNormals.wrapS = waterNormals.wrapT = THREE.RepeatWrapping;
@@ -322,18 +319,15 @@
             waterColor: 0x001e0f,
             distortionScale: 50.0,
         } );
-
         waterMesh = new THREE.Mesh(
                 new THREE.PlaneBufferGeometry(parameters.width * 500, parameters.height * 500 ),
                 water.material
         );
-
         water.opacity = 0.5;
         waterMesh.add( water );
         waterMesh.rotation.x = - Math.PI * 0.5;
         waterMesh.position.y += 70;
         scene.add( waterMesh );
-
         growthLowerLevel = waterMesh.position.y + 120;
         growthUpperLevel = 1241;
         // AUDIO
@@ -385,40 +379,61 @@
          */
         count = 1000;
         randomPoints.push(
-                new THREE.Vector3(-1000, 1000, 1000),
-                new THREE.Vector3(-800, 1000, 900),
-                new THREE.Vector3(-400, 1000, 800),
-                new THREE.Vector3(200, 1000, 700),
-                new THREE.Vector3(400, 1000, 400),
-                new THREE.Vector3(600, 1000, -200),
-                new THREE.Vector3(500, 1000, -600),
-                new THREE.Vector3(900, 1000, - 1400),
-                new THREE.Vector3(1300, 1000, -1400),
-                new THREE.Vector3(1600, 1000, -1000),
-                new THREE.Vector3(1600, 1000, -900),
-                new THREE.Vector3(1500, 1000, -800),
-                new THREE.Vector3(1300, 1000, -700),
-                new THREE.Vector3(900, 1000, -700)
+                new THREE.Vector3(-6055, 363, 6823),
+                new THREE.Vector3(-7410, 473, 4319),
+                new THREE.Vector3(-7325, 589, 3384),
+                new THREE.Vector3(-6771, 656, 1500),
+                new THREE.Vector3(-5361, 819, 622),
+                new THREE.Vector3(-3990, 778, -198),
+                new THREE.Vector3(-2719, 653, -809),
+                new THREE.Vector3(-1539, 639, -821),
+                new THREE.Vector3(-1347, 662, -2049),
+                new THREE.Vector3(-2146, 780, -2958),
+                new THREE.Vector3(-2686, 960, -3308),
+                new THREE.Vector3(-3659, 803, -4455),
+                new THREE.Vector3(-4422, 910, -4871),
+                new THREE.Vector3(-4180, 1090, -6131),
+                new THREE.Vector3(-3307, 1362, -6256),
+                new THREE.Vector3(-2458, 1626, -5823),
+                new THREE.Vector3(-1613, 1953, -5827),
+                new THREE.Vector3(-764, 2610, -6107),
+                new THREE.Vector3(648, 3272, -7156),
+                new THREE.Vector3(1861, 3723, -8148),
+                new THREE.Vector3(2692, 3891, -8536),
+                new THREE.Vector3(2949, 3908, -8368),
+                new THREE.Vector3(3457, 3859, -7789),
+                new THREE.Vector3(3831, 3707, -6979),
+                new THREE.Vector3(3849, 3536, -6290),
+                new THREE.Vector3(3795, 3221, -5594),
+                new THREE.Vector3(3224, 2735, -4829),
+                new THREE.Vector3(2737, 2335, -4547),
+                new THREE.Vector3(1900, 1960, -4115),
+                new THREE.Vector3(1538, 1807, -3873),
+                new THREE.Vector3(756, 1335, -2933),
+                new THREE.Vector3(595, 1126, -2484),
+                new THREE.Vector3(419, 955, -1954),
+                new THREE.Vector3(-256, 642, -978),
+                new THREE.Vector3(-150, 542, -308),
+                new THREE.Vector3(950, 609, 83),
+                new THREE.Vector3(2206, 633, 380),
+                new THREE.Vector3(2581, 639, 683),
+                new THREE.Vector3(2868, 570, 1500),
+                new THREE.Vector3(3084, 547, 2288),
+                new THREE.Vector3(3439, 531, 2883),
+                new THREE.Vector3(3836, 500, 3175),
+                new THREE.Vector3(4283, 548, 3371),
+                new THREE.Vector3(5490, 499, 3630)
         );
-        for(var i = 0; i < 14; i++) {
-            randomPoints[i].y = groundMesh.getHeightAtPoint(randomPoints[i]);
-            /* if(randomPoints[i].y < terrainMesh.getHeightAtPoint(randomPoints[i])) {
-             randomPoints[i].y += 10;
-             }*/
-        }
+
+
         splineCurve = new THREE.CatmullRomCurve3(randomPoints);
         splineGeometry = new THREE.Geometry();
-        splineGeometry.vertices = splineCurve.getPoints(2000);
-        /*  for(var i = 0; i < 1000; i++) {
-         geometry.vertices[i].y = terrainMesh.getHeightAtPoint(geometry.vertices[i]);
-         }   */
+        splineGeometry.vertices = splineCurve.getPoints(200*randomPoints.length);
+
         irregularMaterial = new THREE.LineBasicMaterial( {color: 0x0000ff} );
         splineCurveObject = new THREE.Line(splineGeometry, irregularMaterial);
         scene.add(splineCurveObject);
-        splineCurveObject.position.set(1000,100,1000);
-        //Old camera position, approximately in the middle of the map.
-        /*        camera.position.y = terrainMesh.getHeightAtPoint(camera.position) + 500;*/
-        //New camera position, on the "southern" side of the map
+
         camera.position.x = -6000;
         camera.position.z = 6900;
         camera.position.y = groundMesh.getHeightAtPoint(camera.position) + 350;
@@ -426,7 +441,6 @@
         growthPosition1 = new THREE.Mesh(boxGeom);
         groundMesh.add(growthPosition1);
         growthPosition1.position.y = groundMesh.getHeightAtPoint(growthPosition1.position);
-
         growthPosition2 = new THREE.Mesh(boxGeom);
         growthPosition2.position.x = -4900;
         growthPosition2.position.z = 3900;
