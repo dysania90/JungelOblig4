@@ -270,54 +270,29 @@
         growthUpperLevel = 1241;
 
         /*Irregulaert formet spline-kurve*/
-        // Move this to MovementAndCamera and make it work!
-
 
         camera.position.x = -6000;
         camera.position.z = 6900;
         camera.position.y = groundMesh.getHeightAtPoint(camera.position) + 350;
 
-
-        //
-        // Generate random positions for some number of boxes
-        // Used in instancing. Better examples:
-        //  * http://threejs.org/examples/#webgl_buffergeometry_instancing_dynamic
-        //  * http://threejs.org/examples/#webgl_buffergeometry_instancing_billboards
-        //
-        // Make a buffer that can use instanced attributes
-       /* instancedBoxGeom = new THREE.InstancedBufferGeometry();
-        // Copy geometry from a standard box.
-        instancedBoxGeom.fromGeometry(new THREE.BoxGeometry(100, 100, 100));
-        numBoxes = 10;
-        center = new THREE.Vector3(0,0,0);
-        radius = 50 * worldHalfWidth;
-
-        instancedMaterial = new THREE.ShaderMaterial( {
-            uniforms: {
-                color: { type: "c" , value: new THREE.Color(Math.random(), Math.random(), Math.random()) }
-            },
-            vertexShader: document.getElementById("instanced-vshader").textContent,
-            fragmentShader: document.getElementById("fshader").textContent
-        } );
-        instancedBox = new THREE.Mesh(instancedBoxGeom, instancedMaterial);
-        instancedBox.name = "instancedBox";
-        groundMesh.add(instancedBox);*/
-
         ///////////////////////////
         //   Correct methods    //
         /////////////////////////
 
-        GenerateObjects.billboard();
+        var generateObjects = new GenerateObjects();
+        var soundFX = new SoundFX();
 
-        GenerateObjects.palms3D();
+        generateObjects.billboard();
 
-        GenerateObjects.plants3D();
+        generateObjects.palms3D();
 
-        GenerateObjects.ship();
+        generateObjects.plants3D();
+
+        generateObjects.ship();
 
         MovementAndCamera.createSpline();
 
-        SoundFX.jungleSounds();
+        soundFX.jungleSounds();
 
         DayNightCycle.skybox();
 
