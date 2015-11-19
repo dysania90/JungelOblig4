@@ -1,20 +1,24 @@
-/**
- * Created by Kristoffer on 03/11/2015.
- */
+/*Created by Kristoffer on 03/11/2015.*/
+'use strict';
 
-GenerateObjects = {};
+function GenerateObjects () {};
 
-var palmTexture;
-var plantTexture;
-var models = ['models/palmTrees/palm_straight.obj', 'models/palmTrees/palm_bend.obj',
+
+var MODELS = ['models/palmTrees/palm_straight.obj', 'models/palmTrees/palm_bend.obj',
     'models/palmTrees/palm_dual.obj', 'models/palmTrees/palm_trio.obj',
     'resources/mesh/samples/terrain/plants/tropical_plant2/tropical_plant.obj' ];
+var radius;
+var manager = new THREE.LoadingManager();
+manager.onProgress = function ( item, loaded, total ) {
+    console.log( item, loaded, total );
+};
+var loader = new THREE.ImageLoader( manager );
 
 //////////////////////////////
 //      Billboard grass     //
 //////////////////////////////
 
-GenerateObjects.billboard = function () {
+GenerateObjects.prototype.billboard = function () {
 
     var grassTextureA = THREE.ImageUtils.loadTexture( "models/2Dbillboard/grass01.png" );
     var grassTextureB = THREE.ImageUtils.loadTexture( "models/2Dbillboard/grass02.png" );
@@ -25,16 +29,16 @@ GenerateObjects.billboard = function () {
     var materialC = new THREE.SpriteMaterial( { map: grassTextureC} );
 
     var amount = 300;
-    var radius = 5500;
+    var radiusA = 5500;
     var j = 0;
 
     for ( var a = 0; a < amount; a ++ ) {
         if (j == 3) {
             j = 0;
         }
-        var x = radius * (2 * Math.random() - 1);
-        var y = radius * (2 * Math.random() - 1);
-        var z = radius * (2 * Math.random() - 1);
+        var x = radiusA * (2 * Math.random() - 1);
+        var y = radiusA * (2 * Math.random() - 1);
+        var z = radiusA * (2 * Math.random() - 1);
 
         var material = [materialA.clone(), materialB.clone(), materialC.clone()];
 
@@ -54,9 +58,9 @@ GenerateObjects.billboard = function () {
 //     3D Ship      //
 /////////////////////
 
-GenerateObjects.ship = function() {
+GenerateObjects.prototype.ship = function() {
 
-    objectMaterialLoader = new THREE.OBJMTLLoader();
+    var objectMaterialLoader = new THREE.OBJMTLLoader();
 
     objectMaterialLoader.load(
         'models/pirate-ship-large-obj/pirate-ship-large.obj',
@@ -82,29 +86,27 @@ GenerateObjects.ship = function() {
 
 };
 
-GenerateObjects.palms3D = function () {
-    j = 0;
-    amount = 400;
+GenerateObjects.prototype.palms3D = function () {
+    var j = 0;
+    var amount = 400;
     radius = 100000;
 
-    palmTexture = new THREE.Texture();
+    var palmTexture = new THREE.Texture();
     palmTexture.wrapS = palmTexture.wrapT = THREE.RepeatWrapping;
 
     loader.load( 'resources/textures/samples/terrain/tree/palm_tree/diffuse.png', function ( image ) {
         palmTexture.image = image;
-        /*            texture.transparent = true;
-         texture.opacity = 0.01;*/
         palmTexture.needsUpdate = true;
     } );
 
-    objectLoader = new THREE.OBJLoader( manager );
+    var objectLoader = new THREE.OBJLoader( manager );
 
     for(var i = 0; i < amount; i++) {
 
         if(j === 4) {
             j = 0;
         }
-        objectLoader.load( models[j], function ( object ) {
+        objectLoader.load( MODELS[j], function ( object ) {
 
             object.traverse( function ( child ) {
                 if ( child instanceof THREE.Mesh ) {
@@ -115,19 +117,13 @@ GenerateObjects.palms3D = function () {
                 }
             } );
 
-            bbox = new THREE.Box3().setFromObject(object);
-            randx = (radius *(10 * Math.random() - 1))-5000;
-            /*randy = (radius *(4 * Math.random() - 1))-5000;*/
-            randz = (radius *(10 * Math.random() - 1))-5000;
+            var randx = (radius *(10 * Math.random() - 1))-5000;
+            var randz = (radius *(10 * Math.random() - 1))-5000;
 
             object.position.set(randx, 0, randz);
             object.position.y = groundMesh.getHeightAtPoint(object.position);
-            /*object.position.y -= bbox.min.y;*/
 
             object.name = "Palm";
-
-            /*            object.castShadow = true;
-             object.receiveShadows = true;*/
 
             object.scale.set(7,7,7);
 
@@ -139,13 +135,13 @@ GenerateObjects.palms3D = function () {
     }
 };
 
-GenerateObjects.plants3D = function () {
+GenerateObjects.prototype.plants3D = function () {
 
 
-    plantTexture = new THREE.Texture();
+    var plantTexture = new THREE.Texture();
 
-    objectLoader = new THREE.OBJLoader( manager );
-    amount = 30;
+    var objectLoader = new THREE.OBJLoader( manager );
+    var amount = 30;
     radius = 2000;
 
     loader.load( 'resources/textures/samples/terrain/plants/tropical_plant2/diffuse.png', function ( image ) {
@@ -155,9 +151,9 @@ GenerateObjects.plants3D = function () {
 
     } );
 
-    for(var i = 0; i < numBoxes; i++) {
+    for(var i = 0; i < amount; i++) {
 
-        objectLoader.load(models[4], function (object) {
+        objectLoader.load(MODELS[4], function (object) {
 
             object.traverse(function (child) {
 
@@ -167,30 +163,21 @@ GenerateObjects.plants3D = function () {
                         map:plantTexture, alphaTest: 0.75
                     });
                 }
-
             });
 
-            bbox = new THREE.Box3().setFromObject(object);
-            randx = radius * (2 * Math.random() - 1);
-            randy = radius * (2 * Math.random() - 1);
-            randz = radius * (2 * Math.random() - 1);
+            var randx = radius * (2 * Math.random() - 1);
+            var randy = radius * (2 * Math.random() - 1);
+            var randz = radius * (2 * Math.random() - 1);
 
             object.position.set(randx, randy, randz);
             object.position.y = groundMesh.getHeightAtPoint(object.position);
-
             object.name = "Tropical plant";
-
-            /*            object.castShadow = true;
-             object.receiveShadows = true;*/
 
             object.scale.set(5,5,5);
 
             if ((object.position.y > growthLowerLevel) && (object.position.y < growthUpperLevel)) {
                 groundMesh.add(object);
             }
-
-
         }, onProgress, onError);
-        j++;
     }
 };

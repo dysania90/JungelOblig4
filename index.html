@@ -79,33 +79,9 @@
     var waterMesh;
     var frameTime;
     var angle = 0.0;
-    var randx;
-    var randy;
-    var randz;
-    var bbox;
-    var manager;
-    var loader;
-    var objectMaterialLoader;
-    var objectLoader;
-
-    var spriteModels;
-    var spriteGeom;
-    var spriteTexture;
-    var palmSprite;
-    var myPalm;
     var growthLowerLevel;
     var growthUpperLevel;
     var waterNormals;
-    var count;
-    var boxGeom;
-    var growthPosition1;
-    var growthPosition2;
-    var numBoxes;
-    var center;
-    var radius;
-    var instancedMaterial;
-    var instancedBox;
-    var instancedBoxGeom;
 
     var worldWidth, worldHeight ,
             worldHalfWidth, worldHalfHeight;
@@ -135,11 +111,6 @@
         controls = new THREE.FirstPersonControls(camera);
         controls.movementSpeed = 1500;
         controls.lookSpeed = 0.1;
-        manager = new THREE.LoadingManager();
-        manager.onProgress = function ( item, loaded, total ) {
-            console.log( item, loaded, total );
-        };
-        loader = new THREE.ImageLoader( manager );
 
         ///////////////////////////////////////////////////////
         //                      Renderer                    //
@@ -171,24 +142,11 @@
         dayNightCycle.sunLight();
         // Height map generation/extraction
         // Needs to move to GenerateMap
-        //
-        ///////BLOOOM
-        /*        var renderModel = new THREE.RenderPass( scene, camera );
-         var effectBloom = new THREE.BloomPass( 1.25 );
-         var effectFilm = new THREE.FilmPass( 0.35, 0.95, 2048, false );
-         effectFilm.renderToScreen = true;
-         composer = new THREE.EffectComposer( renderer );
-         composer.addPass( renderModel );
-         composer.addPass( effectBloom );
-         composer.addPass( effectFilm );*/
-        ////
         ///////////////////////////////////////////////////////
         //                      Meshes                      //
         /////////////////////////////////////////////////////
         //
         // This need to move to GenerateMap
-        //
-        //Ground
         var generateMap = new GenerateMap();
         groundMapImage = document.getElementById('groundmap');
         groundData = generateMap.getPixelValues(groundMapImage, 'r');
@@ -274,43 +232,19 @@
         camera.position.z = 6900;
         camera.position.y = groundMesh.getHeightAtPoint(camera.position) + 350;
 
-
-        //
-        // Generate random positions for some number of boxes
-        // Used in instancing. Better examples:
-        //  * http://threejs.org/examples/#webgl_buffergeometry_instancing_dynamic
-        //  * http://threejs.org/examples/#webgl_buffergeometry_instancing_billboards
-        //
-        // Make a buffer that can use instanced attributes
-       /* instancedBoxGeom = new THREE.InstancedBufferGeometry();
-        // Copy geometry from a standard box.
-        instancedBoxGeom.fromGeometry(new THREE.BoxGeometry(100, 100, 100));
-        numBoxes = 10;
-        center = new THREE.Vector3(0,0,0);
-        radius = 50 * worldHalfWidth;
-
-        instancedMaterial = new THREE.ShaderMaterial( {
-            uniforms: {
-                color: { type: "c" , value: new THREE.Color(Math.random(), Math.random(), Math.random()) }
-            },
-            vertexShader: document.getElementById("instanced-vshader").textContent,
-            fragmentShader: document.getElementById("fshader").textContent
-        } );
-        instancedBox = new THREE.Mesh(instancedBoxGeom, instancedMaterial);
-        instancedBox.name = "instancedBox";
-        groundMesh.add(instancedBox);*/
-
         ///////////////////////////
         //   Correct methods    //
         /////////////////////////
 
-        GenerateObjects.billboard();
+        var generateObjects = new GenerateObjects();
 
-        GenerateObjects.palms3D();
+        generateObjects.billboard();
 
-        GenerateObjects.plants3D();
+        generateObjects.palms3D();
 
-        GenerateObjects.ship();
+        generateObjects.plants3D();
+
+        generateObjects.ship();
 
         var movementAndCamera = new MovementAndCamera();
         movementAndCamera.createSpline();
@@ -321,19 +255,16 @@
 
         dayNightCycle.skybox();
 
-        ///////////////////////////////
-        //    End correct methods   //
-        /////////////////////////////
         window.addEventListener( 'resize', onWindowResize, false );
     }
+
     function onWindowResize() {
         camera.aspect = window.innerWidth / window.innerHeight;
         camera.updateProjectionMatrix();
         renderer.setSize( window.innerWidth, window.innerHeight );
         controls.handleResize();
     }
-    // Seen both animate and render functions done in a different way thight might be better for us
-    // Should change it
+
     function animate() {
         requestAnimationFrame( animate );
         angle +=0.00001;
@@ -355,6 +286,7 @@
         render();
         stats.update();
     }
+
     function render() {
         //        renderer.clear(); //nullstiller alle fargebuffere etc 
         controls.update(clock.getDelta());
@@ -364,8 +296,7 @@
         water.render();
         renderer.render( scene, camera );
     }
-    // Do we use onProgress and onError
-    // Do we need it
+
     function onProgress( xhr ) {
         if ( xhr.lengthComputable ) {
             var percentComplete = xhr.loaded / xhr.total * 100;
