@@ -2,12 +2,12 @@
 <html lang="en">
 <head>
     <title>Jungel</title>
-    <meta charset="utf-8">
+    <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, user-scalable=no, minimum-scale=1.0, maximum-scale=1.0">
     <link rel="stylesheet" href="style.css">
 </head>
-<body>
 
+<body>
 <div id="container"><br /><br /><br /><br /><br />Generating world...</div>
 <div id="info"><a href="http://threejs.org" target="_blank">three.js</a> - webgl terrain demo<br />(left click: forward, right click: backward)</div>
 
@@ -37,41 +37,35 @@
 <script src="src/SoundFX.js"></script>
 <script src="src/MovementAndCamera.js"></script>
 
-<script id="instanced-vshader" type="x-shader/x-vertex">
-		// Other attributes and uniforms are supposed to be filled in by Three.js
-		// To avoid it being filled in automatically, use RawShaderMaterial
-        // Instanced attribute, updated only when a new instance is drawn (ie. when all vertices have been drawn and
-        // we're going to draw a slightly different one.
-		attribute vec3 translate;
-		varying vec2 vUV;
-		void main() {
-			<!--vec4 mvPosition = modelViewMatrix * vec4( translate + position, 1.0 );-->
-            vec4 pos = vec4(position, 1.0);
-			vUV = uv;
-			gl_Position = projectionMatrix * modelViewMatrix * pos;
-		}
+<script id="vertex-shader" type="x-shader/x-vertex">
+    // Other attributes and uniforms are supposed to be filled in by Three.js
+    // To avoid it being filled in automatically, use RawShaderMaterial
+    attribute vec3 translate;
+    varying vec2 vUV;
+    void main() {
+        <!--vec4 mvPosition = modelViewMatrix * vec4( translate + position, 1.0 );-->
+        vec4 pos = vec4(position, 1.0);
+        vUV = uv;
+        gl_Position = projectionMatrix * modelViewMatrix * pos;
+    }
 </script>
 
-<script id="fshader" type="x-shader/x-fragment">
-        // Other attributes and uniforms are supposed to be filled in by Three.js
-		// To avoid it being filled in automatically, use RawShaderMaterial
-           uniform sampler2D texture;
-           varying vec2 vUV;
-           <!--uniform vec3 color;-->
-		void main() {
-            vec4 sample = texture2D(texture, vUV);
-			gl_FragColor = vec4(sample.xyz, sample.w);
-
-		}
+<script id="fragment-shader" type="x-shader/x-fragment">
+    // Other attributes and uniforms are supposed to be filled in by Three.js
+    // To avoid it being filled in automatically, use RawShaderMaterial
+    uniform sampler2D texture;
+    varying vec2 vUV;
+    <!--uniform vec3 color;-->
+    void main() {
+        vec4 sample = texture2D(texture, vUV);
+        gl_FragColor = vec4(sample.xyz, sample.w);
+    }
 </script>
 
 <script>
-    // What is this, do we need it?
-    if ( ! Detector.webgl ) {
-        Detector.addGetWebGLMessage();
-        document.getElementById( 'container' ).innerHTML = "";
-    }
-    var container, stats, gui;
+    "use strict";
+
+    var container, stats;
     var camera, controls, scene, renderer, composer;
     var x, y, z;
     var x2, y2, z2;
@@ -112,17 +106,16 @@
     var instancedMaterial;
     var instancedBox;
     var instancedBoxGeom;
-    // WAAAAAY too many var stuff here. Move it where it belongs (GenerateTexture for the most part)
-    /*Ground texture*/
-    /*Palm texture*/
 
     var worldWidth, worldHeight ,
             worldHalfWidth, worldHalfHeight;
     var clock = new THREE.Clock();
+
     window.onload = function() {
         init();
         animate();
     };
+
     var parameters = {
         width: 2000,
         height: 2000,
@@ -132,17 +125,9 @@
         param: 4,
         filterparam: 1
     };
+
     function init() {
-        "use strict";
         container = document.getElementById('container');
-        /*        gui = new DAT.GUI({
-         height : 5 * 32 - 1
-         });
-         var params = {
-         x:0,
-         y:0
-         };
-         gui.add(params, 'interation');*/
         camera = new THREE.PerspectiveCamera(60, window.innerWidth / window.innerHeight, 1, 300000);
         camera.name = 'camera';
         scene = new THREE.Scene();
@@ -155,6 +140,7 @@
             console.log( item, loaded, total );
         };
         loader = new THREE.ImageLoader( manager );
+
         ///////////////////////////////////////////////////////
         //                      Renderer                    //
         /////////////////////////////////////////////////////
@@ -172,6 +158,7 @@
         stats.domElement.style.position = 'absolute';
         stats.domElement.style.top = '0px';
         container.appendChild( stats.domElement );
+
         ///////////////////////////////////////////////////////
         //                      Lights                      //
         /////////////////////////////////////////////////////
@@ -201,8 +188,9 @@
         // This need to move to GenerateMap
         //
         //Ground
+        var generateMap = new GenerateMap();
         groundMapImage = document.getElementById('groundmap');
-        groundData = GenerateMap.getPixelValues(groundMapImage, 'r');
+        groundData = generateMap.getPixelValues(groundMapImage, 'r');
         worldWidth = groundMapImage.width;
         worldHeight = groundMapImage.height;
         worldHalfWidth = Math.floor(worldWidth / 2);
@@ -221,7 +209,7 @@
 
         //Mountain
         mountainMapImage = document.getElementById('mountainmap');
-        mountainData = GenerateMap.getPixelValues(mountainMapImage, 'r');
+        mountainData = generateMap.getPixelValues(mountainMapImage, 'r');
         mountainGeometry = new HeightMapBufferGeometry(mountainData, worldWidth, worldHeight);
         mountainGeometry.scale(50*worldWidth, 4500, 50*worldHeight);
         mountainTexture = THREE.ImageUtils.loadTexture( "textures/mountainTexture.jpg" );
@@ -245,7 +233,7 @@
 
         //Beach
         beachMapImage = document.getElementById('beachmap');
-        beachData = GenerateMap.getPixelValues(beachMapImage, 'r');
+        beachData = generateMap.getPixelValues(beachMapImage, 'r');
         beachGeometry = new HeightMapBufferGeometry(beachData, worldWidth, worldHeight);
         beachGeometry.scale(50*worldWidth, 4500, 50*worldHeight);
         beachTexture = THREE.ImageUtils.loadTexture( "textures/beachTexture.jpg" );
@@ -370,7 +358,6 @@
     function render() {
         //        renderer.clear(); //nullstiller alle fargebuffere etc 
         controls.update(clock.getDelta());
-        //        controls.update(); 
         x2 = x;
         y2 = y;
         z2 = z;
@@ -390,8 +377,8 @@
 </script>
 
 <img src="textures/groundMap.jpeg" id="groundmap" hidden/>
-<img src="textures/mountainMap.jpeg" id="mountainmap" hidden/>
-<img src="textures/lavaMap.jpeg" id="lavamap" hidden/>
+<img src="textures/mountainmap.jpeg" id="mountainmap" hidden/>
+<img src="textures/lavamap.jpeg" id="lavamap" hidden/>
 <img src="textures/beachMap.jpeg" id="beachmap" hidden/>
 
 </body>

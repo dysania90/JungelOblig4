@@ -1,32 +1,9 @@
 /**
  * Created by Kristoffer on 03/11/2015.
  */
-GenerateMap = {}
+'use strict';
 
-// Separate what has to do with creating the map and generating textures
-// Create a function generateMap that takes all input needed to generate the map, then generates it
-
-GenerateMap.generateHeight = function ( width, height ) {
-
-    var size = width * height, data = new Uint8Array( size ),
-        perlin = new ImprovedNoise(), quality = 1, z = Math.random() * 100;
-
-    for ( var j = 0; j < 4; j ++ ) {
-
-        for ( var i = 0; i < size; i ++ ) {
-
-            var x = i % width, y = ~~ ( i / width );
-            data[ i ] += Math.abs( perlin.noise( x / quality, y / quality, z ) * quality * 1.75 );
-
-        }
-
-        quality *= 5;
-
-    }
-
-    return data;
-
-}
+function GenerateMap() {}
 
 /**
  * Extract pixel values from image elements. Not guaranteed to contain exactly the same values as
@@ -35,8 +12,7 @@ GenerateMap.generateHeight = function ( width, height ) {
  * @param {string} [pixelComponents='rgba'] the color components to extract
  * @returns {array|Uint8ClampedArray} a color array
  */
-GenerateMap.getPixelValues = function (domImage, pixelComponents) {
-    "use strict";
+GenerateMap.prototype.getPixelValues = function (domImage, pixelComponents) {
     var canvas = document.createElement('canvas');
     canvas.width = domImage.width;
     canvas.height = domImage.height;
@@ -79,31 +55,4 @@ GenerateMap.getPixelValues = function (domImage, pixelComponents) {
     }
 
     return pixelData;
-}
-
-/**
- * @param {Number} count number of positions
- * @param {THREE.Vector3} center where the position be centered about
- * @param {Number} radius the max area
- */
-GenerateMap.generateRandomPositions = function (count, center, radius) {
-    var translationArray = new Float32Array(3 * count);
-
-    var pos = new THREE.Vector3();
-    for (var i = 0, i3 = 0; i < count; i++, i3 +=3) {
-        // One method to generate random positions
-        // TODO: make gauss distributed method, f.ex
-        pos.x = radius * (2*Math.random() - 1);
-        pos.y = radius * (2*Math.random() - 1);
-        pos.z = radius * (2*Math.random() - 1);
-
-        pos.add(center);
-        //translationArray[i3 + 0] = pos.x;
-        //translationArray[i3 + 1] = pos.y;
-        //translationArray[i3 + 2] = pos.z;
-
-        pos.toArray(translationArray, i3);
-    }
-
-    return translationArray;
-}
+};

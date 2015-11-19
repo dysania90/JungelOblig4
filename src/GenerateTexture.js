@@ -1,13 +1,10 @@
 /* Created by Kristoffer on 03/11/2015. */
-GenerateTexture = {}
+'use strict';
+function GenerateTexture() {}
 
-// Need to move everything that generates texture here
-// Create better functions for it aswell
+GenerateTexture.prototype.generateTexture = function( data, width, height ) {
 
-GenerateTexture.generateTexture = function ( data, width, height ) {
-
-    var canvas, canvasScaled, context, image, imageData,
-        level, diff, vector3, sun, shade;
+    var canvas, canvasScaled, context, image, imageData, vector3, sun, shade;
 
     vector3 = new THREE.Vector3( 0, 0, 0 );
 
@@ -25,7 +22,7 @@ GenerateTexture.generateTexture = function ( data, width, height ) {
     image = context.getImageData( 0, 0, canvas.width, canvas.height );
     imageData = image.data;
 
-    for ( var i = 0, j = 0, l = imageData.length; i < l; i += 4, j ++ ) {
+    for ( var i = 0, j = 0; i < imageData.length; i += 4, j ++ ) {
 
         vector3.x = data[ j - 2 ] - data[ j + 2 ];
         vector3.y = 2;
@@ -42,7 +39,6 @@ GenerateTexture.generateTexture = function ( data, width, height ) {
     context.putImageData( image, 0, 0 );
 
     // Scaled 4x
-
     canvasScaled = document.createElement( 'canvas' );
     canvasScaled.width = width * 4;
     canvasScaled.height = height * 4;
@@ -54,7 +50,7 @@ GenerateTexture.generateTexture = function ( data, width, height ) {
     image = context.getImageData( 0, 0, canvasScaled.width, canvasScaled.height );
     imageData = image.data;
 
-    for ( var i = 0, l = imageData.length; i < l; i += 4 ) {
+    for ( var i = 0; i < imageData.length; i += 4 ) {
 
         var v = ~~ ( Math.random() * 5 );
 
@@ -67,5 +63,4 @@ GenerateTexture.generateTexture = function ( data, width, height ) {
     context.putImageData( image, 0, 0 );
 
     return canvasScaled;
-
-}
+};
