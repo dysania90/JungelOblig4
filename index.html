@@ -85,13 +85,6 @@
     var sunLight;
     var frameTime;
     var angle = 0.0;
-    var urlPrefix;
-    var urls;
-    var textureCube;
-    var shader;
-    var skyBoxMaterial;
-    var mat;
-    var skyBox;
     var splinePoints;
     var randx;
     var randy;
@@ -331,32 +324,8 @@
         growthUpperLevel = 1241;
 
         SoundFX.jungleSounds();
+        DayNightCycle.skybox();
 
-        /////////////SKYBOX
-        urlPrefix = 'textures/';
-        urls = [ urlPrefix + 'sea_negx.jpg',
-            urlPrefix + 'sea_neutral.jpg',
-            urlPrefix + 'sea_negy.jpg',
-            urlPrefix + 'sea_posy.jpg',
-            urlPrefix + 'sea_negz.jpg',
-            urlPrefix + 'sea_posz.jpg' ];
-        textureCube = THREE.ImageUtils.loadTextureCube(urls);
-        textureCube.format = THREE.RGBFormat;
-        shader = THREE.ShaderLib['cube']; // init cube shader from built-in lib
-        shader.uniforms['tCube'].value = textureCube; // apply textures to shader
-        // create shader material
-        skyBoxMaterial = new THREE.ShaderMaterial({
-            fragmentShader : shader.fragmentShader,
-            vertexShader : shader.vertexShader,
-            uniforms : shader.uniforms,
-            depthWrite : false,
-            side : THREE.BackSide
-        });
-        mat = new THREE.MeshBasicMaterial({envMap : textureCube, side: THREE.BackSide});
-        // create skybox mesh
-        skyBox = new THREE.Mesh(new THREE.BoxGeometry(300000, 400000, 300000), mat);
-        skyBox.doubleSided = true;
-        groundMesh.add(skyBox);
         /*Irregulaert formet spline-kurve*/
         // Move this to MovementAndCamera and make it work!
 
