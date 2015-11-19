@@ -67,3 +67,9 @@ MovementAndCamera.prototype.createSpline = function () {
     splineCurveObject = new THREE.Line(splineGeometry, splineMaterial);
     scene.add(splineCurveObject);
 };
+
+MovementAndCamera.prototype.setCamera = function (posx, posz) {
+    camera.position.x = posx;
+    camera.position.z = posz;
+    camera.position.y = groundMesh.getHeightAtPoint(camera.position) + 350;
+}
