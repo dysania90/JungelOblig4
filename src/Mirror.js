@@ -1,9 +1,8 @@
 /**
- * Created by ReidunMarieTennebo on 13.11.2015.
- */
-/**
  * @author Slayvin / http://slayvin.net
  */
+'use strict';
+
 THREE.ShaderLib[ 'mirror' ] = {
 
     uniforms: { "mirrorColor": { type: "c", value: new THREE.Color( 0x7F7F7F ) },
@@ -80,7 +79,7 @@ THREE.Mirror = function ( renderer, camera, options ) {
     this.clipPlane = new THREE.Vector4();
 
     // For debug only, show the normal and plane of the mirror
-    var debugMode = options.debugMode !== undefined ? options.debugMode : false;
+    var debugMode = options.sdebugMode !== undefined ? options.debugMode : false;
 
     if ( debugMode ) {
 
@@ -299,5 +298,4 @@ THREE.Mirror.prototype.renderTemp = function () {
         this.renderer.render( scene, this.mirrorCamera, this.tempTexture, true );
 
     }
-
 };

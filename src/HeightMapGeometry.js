@@ -1,6 +1,7 @@
 /**
  * Created by endre on 12.10.15.
  */
+'use strict';
 
 var HeightMapBufferGeometry = function(heightData, widthSegments, depthSegments, maxHeight) {
 
@@ -30,7 +31,6 @@ var HeightMapBufferGeometry = function(heightData, widthSegments, depthSegments,
 };
 
 HeightMapBufferGeometry.prototype = Object.create( THREE.PlaneBufferGeometry.prototype );
-HeightMapBufferGeometry.prototype.constructor = HeightMapBufferGeometry;
 
 HeightMapBufferGeometry.prototype.computeVertexIndex = function(xPos, zPos) {
     var widthVertices = this.parameters.widthSegments + 1;
@@ -54,23 +54,16 @@ HeightMapBufferGeometry.prototype.computeVertexIndex = function(xPos, zPos) {
         zPos = (depthVertices - 1)/depthVertices;
     }
 
-    //console.log('will compute vertex index for params ' + xPos + ' and ' + zPos);
-
     xPos = Math.floor(xPos * widthVertices);
     zPos = Math.floor(zPos * depthVertices);
 
-    var index = zPos*widthVertices + xPos;
-
-    //console.log('computed ' + xPos + ', ' + zPos + ' which gives ' + index);
-    return index;
+    return zPos*widthVertices + xPos;
 };
 
 HeightMapBufferGeometry.prototype.getHeightAtPoint = function(localPos) {
     var vertexIndex = 3*this.computeVertexIndex(localPos.x, localPos.z);
 
-    var height = this.attributes.position.array[vertexIndex + 1];
-
-    return height;
+    return this.attributes.position.array[vertexIndex + 1];
 };
 
 HeightMapBufferGeometry.prototype.scale = function(x, y, z) {

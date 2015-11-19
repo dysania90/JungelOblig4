@@ -1,14 +1,12 @@
 /**
- * Created by ReidunMarieTennebo on 13.11.2015.
- */
-/**
  * @author jbouny / https://github.com/jbouny
  *
- * Work based on :
+ * Work based on:
  * @author Slayvin / http://slayvin.net : Flat mirror for three.js
  * @author Stemkoski / http://www.adelphi.edu/~stemkoski : An implementation of water shader based on the flat mirror
  * @author Jonas Wagner / http://29a.ch/ && http://29a.ch/slides/2012/webglwater/ : Water shader explanations in WebGL
  */
+'use strict';
 
 THREE.ShaderLib[ 'water' ] = {
 
@@ -294,5 +292,4 @@ THREE.Water.prototype.updateTextureMatrix = function () {
     worldCoordinates.setFromMatrixPosition( this.camera.matrixWorld );
     this.eye = worldCoordinates;
     this.material.uniforms.eye.value = this.eye;
-
 };

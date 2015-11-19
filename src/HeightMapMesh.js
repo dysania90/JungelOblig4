@@ -1,10 +1,7 @@
 /**
  * Created by endre on 12.10.15.
  */
-
-/**
- * Created by endre on 12.10.15.
- */
+'use strict';
 
 var HeightMapMesh = function(heightMapGeometry, material) {
 
@@ -19,7 +16,6 @@ var HeightMapMesh = function(heightMapGeometry, material) {
 };
 
 HeightMapMesh.prototype = Object.create( THREE.Mesh.prototype );
-HeightMapMesh.prototype.constructor = HeightMapMesh;
 
 HeightMapMesh.prototype.getHeightAtPoint = function(localPos) {
     return this.computePositionAtPoint(localPos).y;

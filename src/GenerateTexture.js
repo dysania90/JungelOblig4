@@ -1,5 +1,6 @@
 /* Created by Kristoffer on 03/11/2015. */
 'use strict';
+
 function GenerateTexture() {}
 
 GenerateTexture.prototype.generateTexture = function( data, width, height ) {

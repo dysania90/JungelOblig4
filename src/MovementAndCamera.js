@@ -2,17 +2,16 @@
  * Created by Kristoffer on 06/11/2015.
  */
 'use strict';
+
 function MovementAndCamera () {}
 
-
-// Move spline stuff here. Create functions to make it easier to make camera movements
-
-MovementAndCamera.createSpline = function () {
+MovementAndCamera.prototype.createSpline = function () {
     var splineCurve;
     var splineGeometry;
     var splineMaterial;
     var splineCurveObject;
     var splinePoints = [];
+
     splinePoints.push(
         new THREE.Vector3(-6055, 363, 6823),
         new THREE.Vector3(-7410, 473, 4319),

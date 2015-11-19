@@ -167,7 +167,8 @@
         var ambientLight = new THREE.AmbientLight(0xffffff);
         ambientLight.name = 'ambientLight';
         scene.add(ambientLight);
-        DayNightCycle.sunLight();
+        var dayNightCycle = new DayNightCycle();
+        dayNightCycle.sunLight();
         // Height map generation/extraction
         // Needs to move to GenerateMap
         //
@@ -269,10 +270,6 @@
         growthLowerLevel = waterMesh.position.y + 120;
         growthUpperLevel = 1241;
 
-        /*Irregulaert formet spline-kurve*/
-        // Move this to MovementAndCamera and make it work!
-
-
         camera.position.x = -6000;
         camera.position.z = 6900;
         camera.position.y = groundMesh.getHeightAtPoint(camera.position) + 350;
@@ -315,11 +312,12 @@
 
         GenerateObjects.ship();
 
-        MovementAndCamera.createSpline();
+        var movementAndCamera = new MovementAndCamera();
+        movementAndCamera.createSpline();
 
         SoundFX.jungleSounds();
 
-        DayNightCycle.skybox();
+        dayNightCycle.skybox();
 
         ///////////////////////////////
         //    End correct methods   //

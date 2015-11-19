@@ -2,13 +2,14 @@
  * Created by Kristoffer on 02/11/2015.
  */
 'use strict';
+
 function DayNightCycle() {}
 
 ///////////////////////////////////////////////
 //                Sunlight                  //
 /////////////////////////////////////////////
 
-DayNightCycle.sunLight = function() {
+DayNightCycle.prototype.sunLight = function() {
     var light = new THREE.DirectionalLight(0xf5a914, 2.0); //color of the sun
     var lensFlare;
     var flareColor;
@@ -47,7 +48,7 @@ DayNightCycle.sunLight = function() {
 //                 Skybox                 //
 ///////////////////////////////////////////
 
-DayNightCycle.skybox = function () {
+DayNightCycle.prototype.skybox = function () {
     var urlPrefix;
     var urls;
     var textureCube;
