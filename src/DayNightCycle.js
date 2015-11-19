@@ -84,3 +84,9 @@ DayNightCycle.prototype.skybox = function () {
     skyBox.doubleSided = true;
     groundMesh.add(skyBox);
 };
+
+DayNightCycle.prototype.createAmbientLight = function () {
+    var ambientLight = new THREE.AmbientLight(0xffffff);
+    ambientLight.name = 'ambientLight';
+    return ambientLight;
+};
