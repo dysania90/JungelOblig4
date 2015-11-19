@@ -60,7 +60,7 @@ GenerateTexture.prototype.lava = function() {
     lavaGeometry = new THREE.CircleGeometry(700, 1000);
     lavaMesh = new THREE.Mesh(lavaGeometry,new THREE.MeshLambertMaterial({side: THREE.DoubleSide, map: lavaTexture}));
     lavaMesh.position.set(2457, 3118, -7502);
-    lavaMesh.rotation.x = Math.PI /2;
+    lavaMesh.rotation.x = - Math.PI /2;
     lavaMesh.name = "lava";
     return lavaMesh;
 };

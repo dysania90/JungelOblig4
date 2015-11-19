@@ -5,13 +5,13 @@
 
 function MovementAndCamera () {}
 
-MovementAndCamera.prototype.createSpline = function () {
-    var splineCurve;
-    var splineGeometry;
-    var splineMaterial;
-    var splineCurveObject;
-    var splinePoints = [];
+var splineCurve;
+var splineGeometry;
+var splineMaterial;
+var splineCurveObject;
+var splinePoints = [];
 
+MovementAndCamera.prototype.createSpline = function () {
     splinePoints.push(
         new THREE.Vector3(-6055, 363, 6823),
         new THREE.Vector3(-7410, 473, 4319),
@@ -73,3 +73,66 @@ MovementAndCamera.prototype.setCamera = function (posx, posz) {
     camera.position.z = posz;
     camera.position.y = groundMesh.getHeightAtPoint(camera.position) + 350;
 };
+
+MovementAndCamera.prototype.addTube = function () {
+
+    var value = 1;
+
+    var segments = 1;
+
+    var radiusSegments = parseInt(document.getElementById('radiusSegments').value);
+
+    if (tubeMesh) parent.remove(tubeMesh);
+
+    extrudePath = splines[value];
+
+    tube = new THREE.TubeGeometry(splineCurveObject, segments, 2, radiusSegments, closed2);
+
+    addGeometry(tube, 0xff00ff);
+    setScale();
+
+}
+
+MovementAndCamera.prototype.setScale = function() {
+
+    scale = parseInt( document.getElementById('scale').value );
+    tubeMesh.scale.set( scale, scale, scale );
+
+}
+
+
+MovementAndCamera.prototype.addGeometry = function( geometry, color ) {
+
+    // 3d shape
+
+    tubeMesh = THREE.SceneUtils.createMultiMaterialObject( geometry, [
+        new THREE.MeshLambertMaterial({
+            color: color
+        }),
+        new THREE.MeshBasicMaterial({
+            color: 0x000000,
+            opacity: 0.3,
+            wireframe: true,
+            transparent: true
+        })]);
+
+    parent.add( tubeMesh );
+
+}
+
+MovementAndCamera.prototype.animateCamera = function( toggle ) {
+
+    if ( toggle ) {
+
+        animation = animation === false;
+        document.getElementById('animation').value = 'Camera Spline Animation View: ' + (animation? 'ON': 'OFF');
+
+    }
+
+    lookAhead = document.getElementById('lookAhead').checked;
+
+    showCameraHelper = document.getElementById('cameraHelper').checked;
+
+    cameraHelper.visible = showCameraHelper;
+    cameraEye.visible = showCameraHelper;
+}
