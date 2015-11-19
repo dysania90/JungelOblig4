@@ -65,3 +65,43 @@ GenerateTexture.prototype.generateTexture = function( data, width, height ) {
 
     return canvasScaled;
 };
+
+GenerateTexture.prototype.mountain = function(generateMap) {
+    mountainMapImage = document.getElementById('mountainmap');
+    mountainData = generateMap.getPixelValues(mountainMapImage, 'r');
+    mountainGeometry = new HeightMapBufferGeometry(mountainData, worldWidth, worldHeight);
+    mountainGeometry.scale(50*worldWidth, 4500, 50*worldHeight);
+    mountainTexture = THREE.ImageUtils.loadTexture( "textures/mountainTexture.jpg" );
+    mountainTexture.wrapS = mountainTexture.wrapT = THREE.RepeatWrapping;
+    mountainTexture.repeat.set( 64, 64 );
+    mountainTexture.magFilter = THREE.NearestFilter;
+    mountainTexture.minFilter = THREE.LinearMipMapLinearFilter;
+    mountainMesh = new HeightMapMesh( mountainGeometry, new THREE.MeshLambertMaterial({ map: mountainTexture }));
+    mountainMesh.name = "mountain";
+    groundMesh.add(mountainMesh);
+};
+
+GenerateTexture.prototype.lava = function() {
+    lavaTexture = THREE.ImageUtils.loadTexture( "textures/lavaTexture.jpg" );
+    lavaTexture.wrapS = lavaTexture.wrapT = THREE.RepeatWrapping;
+    lavaGeometry = new THREE.CircleGeometry(700, 1000);
+    lavaMesh = new THREE.Mesh(lavaGeometry,new THREE.MeshLambertMaterial({side: THREE.DoubleSide, map: lavaTexture}));
+    lavaMesh.position.set(2457, 3118, -7502);
+    lavaMesh.rotation.x = Math.PI /2;
+    scene.add(lavaMesh);
+};
+
+GenerateTexture.prototype.beach = function(generateMap) {
+    beachMapImage = document.getElementById('beachmap');
+    beachData = generateMap.getPixelValues(beachMapImage, 'r');
+    beachGeometry = new HeightMapBufferGeometry(beachData, worldWidth, worldHeight);
+    beachGeometry.scale(50*worldWidth, 4500, 50*worldHeight);
+    beachTexture = THREE.ImageUtils.loadTexture( "textures/beachTexture.jpg" );
+    beachTexture.wrapS = beachTexture.wrapT = THREE.RepeatWrapping;
+    beachTexture.repeat.set( 64, 64 );
+    beachTexture.magFilter = THREE.NearestFilter;
+    beachTexture.minFilter = THREE.LinearMipMapLinearFilter;
+    beachMesh = new HeightMapMesh( beachGeometry, new THREE.MeshLambertMaterial({ map: beachTexture }));
+    beachMesh.name = "beach";
+    scene.add(beachMesh);
+};

@@ -3,7 +3,7 @@
  */
 'use strict';
 
-function SoundFX () {};
+function SoundFX () {}
 
 SoundFX.prototype.jungleSounds = function () {
 
