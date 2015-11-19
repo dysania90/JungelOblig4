@@ -71,6 +71,9 @@
     var x, y, z;
     var x2, y2, z2;
     var flag = false;
+    var dayNightCycle;
+    var lensFlare;
+    var sunLight;
     var lavaMesh;
     var water;
     var growthLowerLevel;
@@ -100,7 +103,7 @@
         var renderer = new Renderer();
         renderer.renderer();
         var generateMap = new GenerateMap();
-        var dayNightCycle = new DayNightCycle();
+        dayNightCycle = new DayNightCycle();
         var ambientLight = dayNightCycle.createAmbientLight();
         var generateTexture = new GenerateTexture();
         var generateObjects = new GenerateObjects();
@@ -116,8 +119,11 @@
         generateTexture.beach(generateMap);
         generateTexture.water(ambientLight);
 
-        dayNightCycle.sunLight();
+        sunLight = dayNightCycle.sunLight();
+        lensFlare = dayNightCycle.lensFlare();
         dayNightCycle.skybox();
+        scene.add(sunLight);
+        scene.add(lensFlare);
 
         generateObjects.billboard();
         generateObjects.palms3D();
@@ -142,9 +148,9 @@
     function animate() {
         requestAnimationFrame( animate );
         angle +=0.00001;
-        //sunLight.update(angle); 
+        //dayNightCycle.sunUpdate(angle); 
         water.material.uniforms.time.value += angle;
-        //lensFlare.position.set(sunLight.object3d.position.x, sunLight.object3d.position.y, sunLight.object3d.position.z);
+        lensFlare.position.set(sunLight.position.x, sunLight.position.y, sunLight.position.z);
         lavaMesh.rotation.z += 0.01;
         x = camera.position.x;
         y = camera.position.y;

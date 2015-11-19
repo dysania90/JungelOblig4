@@ -5,12 +5,13 @@
 
 function DayNightCycle() {}
 
+var light;
 ///////////////////////////////////////////////
 //                Sunlight                  //
 /////////////////////////////////////////////
 
 DayNightCycle.prototype.sunLight = function() {
-    var light = new THREE.DirectionalLight(0xf5a914, 2.0); //color of the sun
+    light = new THREE.DirectionalLight(0xf5a914, 2.0); //color of the sun
     var lensFlare;
     var flareColor;
     var textureFlare0;
@@ -19,29 +20,31 @@ DayNightCycle.prototype.sunLight = function() {
     light.name = 'sun';
     light.position.set(10000, 10000, 10000);
 
-    scene.add(light);
-    textureFlare0 = THREE.ImageUtils.loadTexture("textures/solarFlare.png");
+    return light;
+};
+
+DayNightCycle.prototype.sunUpdate = function(sunAngle) {
+    light.position.x = 0;
+    light.position.y = Math.sin(sunAngle) * 10000;
+    light.position.z = -Math.cos(sunAngle) * 10000;
+};
+
+DayNightCycle.prototype.lensFlare = function () {
+    var textureFlare0 = THREE.ImageUtils.loadTexture("textures/solarFlare.png");
     textureFlare0.transparent = true;
     textureFlare0.opacity = 1.0;
     textureFlare0.alphaTest = 0.5;
     textureFlare0.minFilter = THREE.LinearMipMapLinearFilter;
-    flareColor = new THREE.Color(0xffaacc);
-    lensFlare = new THREE.LensFlare(textureFlare0, 350, 0.0, THREE.AdditiveBlending, flareColor);
+    var flareColor = new THREE.Color(0xffaacc);
+    var lensFlare = new THREE.LensFlare(textureFlare0, 350, 0.0, THREE.AdditiveBlending, flareColor);
     lensFlare.add(textureFlare0, 60, 0.6, THREE.AdditiveBlending);
     lensFlare.add(textureFlare0, 70, 0.7, THREE.AdditiveBlending);
     lensFlare.add(textureFlare0, 120, 0.9, THREE.AdditiveBlending);
     lensFlare.add(textureFlare0, 70, 1.0, THREE.AdditiveBlending);
     lensFlare.position.set(light.position.x, light.position.y, light.position.z);
-    scene.add(lensFlare);
 
-    this.update	= function(sunAngle) {
-        light.position.x = 0;
-        light.position.y = Math.sin(sunAngle) * 10000;
-        light.position.z = -Math.cos(sunAngle) * 10000;
-
-    }
+    return lensFlare;
 };
-
 /////////////////////////////////////////////
 //                 Skybox                 //
 ///////////////////////////////////////////

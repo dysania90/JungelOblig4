@@ -72,4 +72,4 @@ MovementAndCamera.prototype.setCamera = function (posx, posz) {
     camera.position.x = posx;
     camera.position.z = posz;
     camera.position.y = groundMesh.getHeightAtPoint(camera.position) + 350;
-}
+};
