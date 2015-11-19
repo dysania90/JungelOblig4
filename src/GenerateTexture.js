@@ -64,6 +64,16 @@ GenerateTexture.prototype.beach = function(generateMap) {
 };
 
 GenerateTexture.prototype.water = function(ambientLight) {
+    var parameters = {
+        width: 2000,
+        height: 2000,
+        widthSegments: 250,
+        heightSegments: 250,
+        depth: 1500,
+        param: 4,
+        filterparam: 1
+    };
+
     waterNormals = new THREE.ImageUtils.loadTexture( 'textures/waternormals.jpg' );
     waterNormals.wrapS = waterNormals.wrapT = THREE.RepeatWrapping;
     water = new THREE.Water( renderer, camera, scene, {
