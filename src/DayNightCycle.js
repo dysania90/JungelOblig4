@@ -10,7 +10,6 @@ function DayNightCycle() {}
 
 DayNightCycle.sunLight = function() {
     var light = new THREE.DirectionalLight(0xf5a914, 2.0); //color of the sun
-    var d = 15000;
     var lensFlare;
     var flareColor;
     var textureFlare0;
@@ -19,19 +18,6 @@ DayNightCycle.sunLight = function() {
     light.name = 'sun';
     light.position.set(10000, 10000, 10000);
 
-    light.castShadow = true;
-    light.castShadow = true;
-    /*
-    light.shadowMapWidth = 512;
-    light.shadowMapHeight = 512;
-    light.shadowCameraFar = 10000;
-    light.shadowCameraRight = d;
-    light.shadowCameraLeft = -d;
-    light.shadowCameraTop = d;
-    light.shadowCameraBottom = -d;
-    light.shadowDarkness = 0.5;
-    light.shadowCameraVisible = true;
-    */
     scene.add(light);
     scene.add(new THREE.DirectionalLightHelper(light, 100));
 
@@ -55,27 +41,6 @@ DayNightCycle.sunLight = function() {
         light.position.z = -Math.cos(sunAngle) * 10000;
 
     }
-};
-
-DayNightCycle.createLensFlare = function () {
-    var textureFlare0;
-    var flareColor;
-    var lensFlare;
-
-    textureFlare0 = THREE.ImageUtils.loadTexture("textures/solarFlare.png");
-    textureFlare0.transparent = true;
-    textureFlare0.opacity = 1.0;
-    textureFlare0.alphaTest = 0.5;
-    textureFlare0.minFilter = THREE.LinearMipMapLinearFilter;
-
-    flareColor = new THREE.Color(0xffaacc);
-
-    lensFlare = new THREE.LensFlare(textureFlare0, 350, 0.0, THREE.AdditiveBlending, flareColor);
-    lensFlare.add(textureFlare0, 60, 0.6, THREE.AdditiveBlending);
-    lensFlare.add(textureFlare0, 70, 0.7, THREE.AdditiveBlending);
-    lensFlare.add(textureFlare0, 120, 0.9, THREE.AdditiveBlending);
-    lensFlare.add(textureFlare0, 70, 1.0, THREE.AdditiveBlending);
-    return lensFlare;
 };
 
 /////////////////////////////////////////////
