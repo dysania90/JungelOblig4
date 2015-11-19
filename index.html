@@ -21,6 +21,7 @@
 <script src="bower_components/three.js/examples/js/controls/OrbitControls.js"></script>
 <script src="bower_components/three.js/examples/js/ImprovedNoise.js"></script>
 <script src="bower_components/three.js/examples/js/Detector.js"></script>
+<script src="bower_components/three.js/examples/js/CurveExtras.js"></script>
 <script src="bower_components/three.js/examples/js/libs/stats.min.js"></script>
 <script src="bower_components/three.js/examples/js/libs/dat.gui.min.js"></script>
 <script src="bower_components/three.js/examples/js/objects/ShadowMesh.js"></script>
@@ -67,37 +68,11 @@
     "use strict";
 
     var container, stats;
-    var camera, splineCamera, controls, scene, renderer, composer;
+    var camera,  controls, scene, renderer, composer;
 
-
-    ///SPLINE-RELATERT
-    var targetRotation = 0;
-    var targetRotationOnMouseDown = 0;
-
-    var mouseX = 0;
-    var mouseXOnMouseDown = 0;
-
-    var windowHalfX = window.innerWidth / 2;
-    var windowHalfY = window.innerHeight / 2;
-
-    var binormal = new THREE.Vector3();
-    var normal = new THREE.Vector3();
-
-    var parent;
-    var tube, tubeMesh;
-    var animation = false, lookAhead = false;
-    var scale;
-    var extrudePath;
-
-    var closed2 = true;
-    var showCameraHelper = false;
-    var cameraHelper, cameraEye;
-    ////
-
-
-    var x, y, z;
-    var x2, y2, z2;
     var flag = false;
+    var shadowsEnabled = false;
+    var splineVisible = false;
     var dayNightCycle;
     var lensFlare;
     var sunLight;
@@ -133,11 +108,7 @@
         dayNightCycle = new DayNightCycle();
         var ambientLight = dayNightCycle.createAmbientLight();
         var generateTexture = new GenerateTexture();
-        var generateObjects = new GenerateObjects();
-        var movementAndCamera = new MovementAndCamera();
-        var soundFX = new SoundFX();
         scene.add(ambientLight);
-
 
         generateTexture.terrain(generateMap);
         generateTexture.mountain(generateMap);
@@ -169,11 +140,12 @@
         generateObjects.plants3D();
         generateObjects.ship();
 
-        movementAndCamera.createSpline();
         movementAndCamera.setCamera(-6000, 6900);
 
-        //movementAndCamera.createSpline();
-        //movementAndCamera.addTube();
+        if(splineVisible) {
+            movementAndCamera.createSpline();
+        }
+
         soundFX.jungleSounds();
 
         window.addEventListener( 'resize', onWindowResize, false );
@@ -191,8 +163,8 @@
         angle +=0.00001;
         //dayNightCycle.sunUpdate(angle); 
         water.material.uniforms.time.value += angle;
+        lavaMesh.rotation.z += 0.01;
         //lensFlare.position.set(sunLight.position.x, sunLight.position.y, sunLight.position.z);
-
 
         render();
         stats.update();
@@ -201,9 +173,8 @@
     function render() {
         //        renderer.clear(); //nullstiller alle fargebuffere etc 
         controls.update(clock.getDelta());
-        x2 = x;
-        y2 = y;
-        z2 = z;
+
+
         water.render();
         renderer.render( scene, camera );
     }

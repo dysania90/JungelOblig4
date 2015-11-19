@@ -26,6 +26,7 @@ GenerateTexture.prototype.terrain = function(generateMap) {
     groundTexture.minFilter = THREE.LinearMipMapLinearFilter;
     groundMesh = new HeightMapMesh( groundGeometry,  new THREE.MeshLambertMaterial( { map: groundTexture } ));
     groundMesh.name = "terrain";
+    groundMesh.receiveShadow = true;
     scene.add( groundMesh );
 };
 
@@ -47,6 +48,7 @@ GenerateTexture.prototype.mountain = function(generateMap) {
     mountainTexture.minFilter = THREE.LinearMipMapLinearFilter;
     mountainMesh = new HeightMapMesh( mountainGeometry, new THREE.MeshLambertMaterial({ map: mountainTexture }));
     mountainMesh.name = "mountain";
+    mountainMesh.receiveShadow = true;
     groundMesh.add(mountainMesh);
 };
 
@@ -83,6 +85,7 @@ GenerateTexture.prototype.beach = function(generateMap) {
     beachTexture.minFilter = THREE.LinearMipMapLinearFilter;
     beachMesh = new HeightMapMesh( beachGeometry, new THREE.MeshLambertMaterial({ map: beachTexture }));
     beachMesh.name = "beach";
+    beachMesh.receiveShadow = true;
     scene.add(beachMesh);
 };
 
@@ -120,6 +123,7 @@ GenerateTexture.prototype.water = function(ambientLight) {
     waterMesh.rotation.x = - Math.PI * 0.5;
     waterMesh.position.y += 70;
     waterMesh.name = "water";
+    waterMesh.receiveShadow = true;
     growthLowerLevel = waterMesh.position.y + 120;
     growthUpperLevel = 1241;
     scene.add(waterMesh);

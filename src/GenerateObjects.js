@@ -80,6 +80,10 @@ GenerateObjects.prototype.ship = function() {
 
             object.name = "Ship";
 
+            if(shadowsEnabled) {
+                object.castShadow = true;
+            }
+
             groundMesh.add( object );
         }, onProgress, onError );
 
@@ -114,6 +118,8 @@ GenerateObjects.prototype.palms3D = function () {
                     child.material = new THREE.MeshLambertMaterial({
                         map:palmTexture, alphaTest: 0.75
                     });
+                    child.castShadow = true;
+
                 }
             } );
 
@@ -125,7 +131,12 @@ GenerateObjects.prototype.palms3D = function () {
 
             object.name = "Palm";
 
+            if(shadowsEnabled) {
+                object.castShadow = true;
+            }
+
             object.scale.set(7,7,7);
+
 
             if ((object.position.y > (growthLowerLevel)) && (object.position.y < (growthUpperLevel))) {
                 groundMesh.add(object);
@@ -162,6 +173,7 @@ GenerateObjects.prototype.plants3D = function () {
                     child.material = new THREE.MeshLambertMaterial({
                         map:plantTexture, alphaTest: 0.75
                     });
+                    child.castShadow = true;
                 }
             });
 
@@ -172,6 +184,10 @@ GenerateObjects.prototype.plants3D = function () {
             object.position.set(randx, randy, randz);
             object.position.y = groundMesh.getHeightAtPoint(object.position);
             object.name = "Tropical plant";
+
+            if(shadowsEnabled) {
+                object.castShadow = true;
+            }
 
             object.scale.set(5,5,5);
 
