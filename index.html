@@ -103,6 +103,10 @@
     };
 
     function init() {
+
+        ////////////////////////////////////////////////////////
+        //                   Initiation                      //
+        //////////////////////////////////////////////////////
         container = document.getElementById('container');
         camera = new THREE.PerspectiveCamera(60, window.innerWidth / window.innerHeight, 1, 300000);
         camera.name = 'camera';
@@ -111,17 +115,6 @@
         controls = new THREE.FirstPersonControls(camera);
         controls.movementSpeed = 1500;
         controls.lookSpeed = 0.1;
-
-
-
-        /////////////////////////////
-        //     Not correct        //
-        ///////////////////////////
-
-        var generateMap = new GenerateMap();
-        var dayNightCycle = new DayNightCycle();
-        var ambientLight = dayNightCycle.createAmbientLight();
-        scene.add(ambientLight);
 
         ///////////////////////////////////////////////////////
         //                      Renderer                    //
@@ -140,6 +133,11 @@
         stats.domElement.style.position = 'absolute';
         stats.domElement.style.top = '0px';
         container.appendChild( stats.domElement );
+
+        var generateMap = new GenerateMap();
+        var dayNightCycle = new DayNightCycle();
+        var ambientLight = dayNightCycle.createAmbientLight();
+        scene.add(ambientLight);
 
         ///////////////////////////////////////////////////////
         //                      Meshes                      //

@@ -20,8 +20,6 @@ DayNightCycle.prototype.sunLight = function() {
     light.position.set(10000, 10000, 10000);
 
     scene.add(light);
-    scene.add(new THREE.DirectionalLightHelper(light, 100));
-
     textureFlare0 = THREE.ImageUtils.loadTexture("textures/solarFlare.png");
     textureFlare0.transparent = true;
     textureFlare0.opacity = 1.0;
