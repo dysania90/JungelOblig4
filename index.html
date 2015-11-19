@@ -34,6 +34,7 @@
 <script src="src/GenerateTexture.js"></script>
 <script src="src/Mirror.js"></script> 
 <script src="src/Water.js"></script>
+<script src="src/SoundFX.js"></script>
 
 <script id="instanced-vshader" type="x-shader/x-vertex">
 		// Other attributes and uniforms are supposed to be filled in by Three.js
@@ -59,6 +60,7 @@
 		void main() {
             vec4 sample = texture2D(texture, vUV);
 			gl_FragColor = vec4(sample.xyz, sample.w);
+
 		}
 </script>
 
@@ -327,14 +329,9 @@
         scene.add( waterMesh );
         growthLowerLevel = waterMesh.position.y + 120;
         growthUpperLevel = 1241;
-        // AUDIO
-        var listener = new THREE.AudioListener();
-        scene.add(listener);
-        var audio = new THREE.Audio(listener);
-        audio.load('audio/rainforest.mp3');
-        //audio.autoplay = true;
-        audio.setLoop(500);
-        scene.add(audio);
+
+        SoundFX.jungleSounds();
+
         /////////////SKYBOX
         urlPrefix = 'textures/';
         urls = [ urlPrefix + 'sea_negx.jpg',
@@ -511,6 +508,7 @@
 
 <img src="textures/groundMap.jpeg" id="groundmap" hidden/>
 <img src="textures/mountainMap.jpeg" id="mountainmap" hidden/>
+<img src="textures/lavaMap.jpeg" id="lavamap" hidden/>
 <img src="textures/beachMap.jpeg" id="beachmap" hidden/>
 
 </body>

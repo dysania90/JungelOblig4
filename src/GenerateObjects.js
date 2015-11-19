@@ -2,49 +2,33 @@
  * Created by Kristoffer on 03/11/2015.
  */
 
-GenerateObjects = {}
-
-//Move placements of objects here
-
-/////////////////////////////////////////////
-//           Billboard grass              //
-///////////////////////////////////////////
-var spriteTL, spriteTR, spriteBL, spriteBR, spriteC;
-
-var mapC;
-var sceneOrtho;
+GenerateObjects = {};
 
 var group;
 
-var grassTextureA = THREE.ImageUtils.loadTexture( "models/2Dbillboard/grass02.png" );
-var grassTextureB = THREE.ImageUtils.loadTexture( "models/2Dbillboard/grass01.png" );
-var grassTextureC = THREE.ImageUtils.loadTexture( "models/2Dbillboard/grass03.png" );
-
-var materialA = new THREE.SpriteMaterial( { map: grassTextureA} );
-var materialB = new THREE.SpriteMaterial( { map: grassTextureB} );
-var materialC = new THREE.SpriteMaterial( { map: grassTextureC} );
-
 var palmTexture;
 var plantTexture;
-var shipTexture;
-
-
-
-
-
-
-var amount, radius;
-
-var j;
 var models = ['models/palmTrees/palm_straight.obj', 'models/palmTrees/palm_bend.obj',
     'models/palmTrees/palm_dual.obj', 'models/palmTrees/palm_trio.obj',
     'resources/mesh/samples/terrain/plants/tropical_plant2/tropical_plant.obj' ];
 
+//////////////////////////////
+//      Billboard grass     //
+//////////////////////////////
+
 GenerateObjects.billboard = function () {
 
-    amount = 300;
-    radius = 5500;
-    j = 0;
+    var grassTextureA = THREE.ImageUtils.loadTexture( "models/2Dbillboard/grass01.png" );
+    var grassTextureB = THREE.ImageUtils.loadTexture( "models/2Dbillboard/grass02.png" );
+    var grassTextureC = THREE.ImageUtils.loadTexture( "models/2Dbillboard/grass03.png" );
+
+    var materialA = new THREE.SpriteMaterial( { map: grassTextureA} );
+    var materialB = new THREE.SpriteMaterial( { map: grassTextureB} );
+    var materialC = new THREE.SpriteMaterial( { map: grassTextureC} );
+
+    var amount = 300;
+    var radius = 5500;
+    var j = 0;
 
     for ( var a = 0; a < amount; a ++ ) {
         if (j == 3) {
@@ -68,6 +52,9 @@ GenerateObjects.billboard = function () {
 
 };
 
+///////////////////////
+//     3D Ship      //
+/////////////////////
 
 GenerateObjects.ship = function() {
 
