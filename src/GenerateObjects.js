@@ -1,22 +1,19 @@
 /**
  * Created by Kristoffer on 03/11/2015.
  */
+'use strict';
 
-GenerateObjects = {};
+function GenerateObjects() {}
 
-var group;
-
-var palmTexture;
-var plantTexture;
-var models = ['models/palmTrees/palm_straight.obj', 'models/palmTrees/palm_bend.obj',
+var MODELS = ['models/palmTrees/palm_straight.obj', 'models/palmTrees/palm_bend.obj',
     'models/palmTrees/palm_dual.obj', 'models/palmTrees/palm_trio.obj',
     'resources/mesh/samples/terrain/plants/tropical_plant2/tropical_plant.obj' ];
 
-//////////////////////////////
-//      Billboard grass     //
-//////////////////////////////
+//////////////////////////////////////
+//          Billboard grass        //
+////////////////////////////////////
 
-GenerateObjects.billboard = function () {
+GenerateObjects.prototype.billboard = function () {
 
     var grassTextureA = THREE.ImageUtils.loadTexture( "models/2Dbillboard/grass01.png" );
     var grassTextureB = THREE.ImageUtils.loadTexture( "models/2Dbillboard/grass02.png" );
@@ -38,7 +35,7 @@ GenerateObjects.billboard = function () {
         var y = radius * (2 * Math.random() - 1);
         var z = radius * (2 * Math.random() - 1);
 
-        material = [materialA.clone(), materialB.clone(), materialC.clone()];
+        var material = [materialA.clone(), materialB.clone(), materialC.clone()];
 
         var sprite = new THREE.Sprite( material[j] );
 
@@ -52,11 +49,11 @@ GenerateObjects.billboard = function () {
 
 };
 
-///////////////////////
-//     3D Ship      //
-/////////////////////
+//////////////////////////////////////
+//             3D Ship             //
+////////////////////////////////////
 
-GenerateObjects.ship = function() {
+GenerateObjects.prototype.ship = function() {
 
     objectMaterialLoader = new THREE.OBJMTLLoader();
 
@@ -84,12 +81,16 @@ GenerateObjects.ship = function() {
 
 };
 
-GenerateObjects.palms3D = function () {
-    j = 0;
-    amount = 400;
-    radius = 100000;
+//////////////////////////////////////
+//             3D Palms            //
+////////////////////////////////////
 
-    palmTexture = new THREE.Texture();
+GenerateObjects.prototype.palms3D = function () {
+    var j = 0;
+    var amount = 400;
+    var radius = 100000;
+    var palmTexture = new THREE.Texture();
+
     palmTexture.wrapS = palmTexture.wrapT = THREE.RepeatWrapping;
 
     loader.load( 'resources/textures/samples/terrain/tree/palm_tree/diffuse.png', function ( image ) {
@@ -101,14 +102,12 @@ GenerateObjects.palms3D = function () {
 
     objectLoader = new THREE.OBJLoader( manager );
 
-    var forest = new THREE.Object3D();
-
     for(var i = 0; i < amount; i++) {
 
         if(j === 4) {
             j = 0;
         }
-        objectLoader.load( models[j], function ( object ) {
+        objectLoader.load( MODELS[j], function ( object ) {
 
             object.traverse( function ( child ) {
                 if ( child instanceof THREE.Mesh ) {
@@ -118,7 +117,6 @@ GenerateObjects.palms3D = function () {
                     });
                 }
             } );
-
 
             bbox = new THREE.Box3().setFromObject(object);
             randx = (radius *(10 * Math.random() - 1))-5000;
@@ -139,21 +137,20 @@ GenerateObjects.palms3D = function () {
             if ((object.position.y > (growthLowerLevel)) && (object.position.y < (growthUpperLevel))) {
                 groundMesh.add(object);
             }
-
-
         }, onProgress, onError );
         j++;
     }
 };
 
-GenerateObjects.plants3D = function () {
+//////////////////////////////////////
+//             3D Plants           //
+////////////////////////////////////
 
+GenerateObjects.prototype.plants3D = function () {
 
-    plantTexture = new THREE.Texture();
-
-    objectLoader = new THREE.OBJLoader( manager );
-    amount = 30;
-    radius = 2000;
+    var plantTexture = new THREE.Texture();
+    var objectLoader = new THREE.OBJLoader( manager );
+    var radius = 2000;
 
     loader.load( 'resources/textures/samples/terrain/plants/tropical_plant2/diffuse.png', function ( image ) {
 
@@ -164,7 +161,7 @@ GenerateObjects.plants3D = function () {
 
     for(var i = 0; i < numBoxes; i++) {
 
-        objectLoader.load(models[4], function (object) {
+        objectLoader.load(MODELS[4], function (object) {
 
             object.traverse(function (child) {
 
@@ -195,8 +192,6 @@ GenerateObjects.plants3D = function () {
             if ((object.position.y > growthLowerLevel) && (object.position.y < growthUpperLevel)) {
                 groundMesh.add(object);
             }
-
-
         }, onProgress, onError);
         j++;
     }

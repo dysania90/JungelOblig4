@@ -1,14 +1,19 @@
 /**
  * Created by Kristoffer on 19/11/2015.
  */
-SoundFX = {};
+'use strict';
 
-SoundFX.jungleSounds = function () {
+function SoundFX () {};
+
+SoundFX.prototype.jungleSounds = function () {
+
     var listener = new THREE.AudioListener();
-    scene.add(listener);
     var audio = new THREE.Audio(listener);
+
     audio.load('audio/rainforest.mp3');
     audio.autoplay = true;
     audio.setLoop(500);
+
+    scene.add(listener);
     scene.add(audio);
 };
