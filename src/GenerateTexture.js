@@ -3,67 +3,23 @@
 
 function GenerateTexture() {}
 
-GenerateTexture.prototype.generateTexture = function( data, width, height ) {
-
-    var canvas, canvasScaled, context, image, imageData, vector3, sun, shade;
-
-    vector3 = new THREE.Vector3( 0, 0, 0 );
-
-    sun = new THREE.Vector3( 1, 1, 1 );
-    sun.normalize();
-
-    canvas = document.createElement( 'canvas' );
-    canvas.width = width;
-    canvas.height = height;
-
-    context = canvas.getContext( '2d' );
-    context.fillStyle = '#000';
-    context.fillRect( 0, 0, width, height );
-
-    image = context.getImageData( 0, 0, canvas.width, canvas.height );
-    imageData = image.data;
-
-    for ( var i = 0, j = 0; i < imageData.length; i += 4, j ++ ) {
-
-        vector3.x = data[ j - 2 ] - data[ j + 2 ];
-        vector3.y = 2;
-        vector3.z = data[ j - width * 2 ] - data[ j + width * 2 ];
-        vector3.normalize();
-
-        shade = vector3.dot( sun );
-
-        imageData[ i ] = ( 96 + shade * 128 ) * ( 0.5 + data[ j ] * 0.007 );
-        imageData[ i + 1 ] = ( 32 + shade * 96 ) * ( 0.5 + data[ j ] * 0.007 );
-        imageData[ i + 2 ] = ( shade * 96 ) * ( 0.5 + data[ j ] * 0.007 );
-    }
-
-    context.putImageData( image, 0, 0 );
-
-    // Scaled 4x
-    canvasScaled = document.createElement( 'canvas' );
-    canvasScaled.width = width * 4;
-    canvasScaled.height = height * 4;
-
-    context = canvasScaled.getContext( '2d' );
-    context.scale( 4, 4 );
-    context.drawImage( canvas, 0, 0 );
-
-    image = context.getImageData( 0, 0, canvasScaled.width, canvasScaled.height );
-    imageData = image.data;
-
-    for ( var i = 0; i < imageData.length; i += 4 ) {
-
-        var v = ~~ ( Math.random() * 5 );
-
-        imageData[ i ] += v;
-        imageData[ i + 1 ] += v;
-        imageData[ i + 2 ] += v;
-
-    }
-
-    context.putImageData( image, 0, 0 );
-
-    return canvasScaled;
+GenerateTexture.prototype.terrain = function(generateMap) {
+    groundMapImage = document.getElementById('groundmap');
+    groundData = generateMap.getPixelValues(groundMapImage, 'r');
+    worldWidth = groundMapImage.width;
+    worldHeight = groundMapImage.height;
+    worldHalfWidth = Math.floor(worldWidth / 2);
+    worldHalfHeight = Math.floor(worldHeight / 2);
+    groundGeometry = new HeightMapBufferGeometry(groundData, worldWidth, worldHeight);
+    groundGeometry.scale(50*worldWidth, 4500, 50*worldHeight);
+    groundTexture = THREE.ImageUtils.loadTexture( "textures/groundDirtTexture.jpg" );
+    groundTexture.wrapS = groundTexture.wrapT = THREE.RepeatWrapping;
+    groundTexture.repeat.set( 256, 256 );
+    groundTexture.magFilter = THREE.NearestFilter;
+    groundTexture.minFilter = THREE.LinearMipMapLinearFilter;
+    groundMesh = new HeightMapMesh( groundGeometry,  new THREE.MeshLambertMaterial( { map: groundTexture } ));
+    groundMesh.name = "terrain";
+    scene.add( groundMesh );
 };
 
 GenerateTexture.prototype.mountain = function(generateMap) {
@@ -88,6 +44,7 @@ GenerateTexture.prototype.lava = function() {
     lavaMesh = new THREE.Mesh(lavaGeometry,new THREE.MeshLambertMaterial({side: THREE.DoubleSide, map: lavaTexture}));
     lavaMesh.position.set(2457, 3118, -7502);
     lavaMesh.rotation.x = Math.PI /2;
+    lavaMesh.name = "lava";
     scene.add(lavaMesh);
 };
 
@@ -104,4 +61,31 @@ GenerateTexture.prototype.beach = function(generateMap) {
     beachMesh = new HeightMapMesh( beachGeometry, new THREE.MeshLambertMaterial({ map: beachTexture }));
     beachMesh.name = "beach";
     scene.add(beachMesh);
+};
+
+GenerateTexture.prototype.water = function(ambientLight) {
+    waterNormals = new THREE.ImageUtils.loadTexture( 'textures/waternormals.jpg' );
+    waterNormals.wrapS = waterNormals.wrapT = THREE.RepeatWrapping;
+    water = new THREE.Water( renderer, camera, scene, {
+        textureWidth: 512,
+        textureHeight: 512,
+        waterNormals: waterNormals,
+        alpha: 1.0,
+        sunDirection:  ambientLight.position.clone().normalize(),
+        sunColor: 0xffffff,
+        waterColor: 0x001e0f,
+        distortionScale: 50.0
+    });
+    waterMesh = new THREE.Mesh(
+        new THREE.PlaneBufferGeometry(parameters.width * 500, parameters.height * 500),
+        water.material
+    );
+    water.opacity = 0.5;
+    waterMesh.add( water );
+    waterMesh.rotation.x = - Math.PI * 0.5;
+    waterMesh.position.y += 70;
+    waterMesh.name = "water";
+    scene.add( waterMesh );
+    growthLowerLevel = waterMesh.position.y + 120;
+    growthUpperLevel = 1241;
 };

@@ -144,54 +144,12 @@
         ///////////////////////////////////////////////////////
         //                      Meshes                      //
         /////////////////////////////////////////////////////
-
-        groundMapImage = document.getElementById('groundmap');
-        groundData = generateMap.getPixelValues(groundMapImage, 'r');
-        worldWidth = groundMapImage.width;
-        worldHeight = groundMapImage.height;
-        worldHalfWidth = Math.floor(worldWidth / 2);
-        worldHalfHeight = Math.floor(worldHeight / 2);
-        groundGeometry = new HeightMapBufferGeometry(groundData, worldWidth, worldHeight);
-        groundGeometry.scale(50*worldWidth, 4500, 50*worldHeight);
-        groundTexture = THREE.ImageUtils.loadTexture( "textures/groundDirtTexture.jpg" );
-        groundTexture.wrapS = groundTexture.wrapT = THREE.RepeatWrapping;
-        groundTexture.repeat.set( 256, 256 );
-        groundTexture.magFilter = THREE.NearestFilter;
-        groundTexture.minFilter = THREE.LinearMipMapLinearFilter;
-        groundMesh = new HeightMapMesh( groundGeometry,  new THREE.MeshLambertMaterial( { map: groundTexture } ));
-        groundMesh.name = "terrain";
-        groundMesh.receiveShadows = true;
-        scene.add( groundMesh );
-
         var generateTexture = new GenerateTexture();
+        generateTexture.terrain(generateMap);
         generateTexture.mountain(generateMap);
         generateTexture.lava();
         generateTexture.beach(generateMap);
-
-        //Water
-        waterNormals = new THREE.ImageUtils.loadTexture( 'textures/waternormals.jpg' );
-        waterNormals.wrapS = waterNormals.wrapT = THREE.RepeatWrapping;
-        water = new THREE.Water( renderer, camera, scene, {
-            textureWidth: 512,
-            textureHeight: 512,
-            waterNormals: waterNormals,
-            alpha: 	1.0,
-            sunDirection:  ambientLight.position.clone().normalize(),
-            sunColor: 0xffffff,
-            waterColor: 0x001e0f,
-            distortionScale: 50.0,
-        } );
-        waterMesh = new THREE.Mesh(
-                new THREE.PlaneBufferGeometry(parameters.width * 500, parameters.height * 500 ),
-                water.material
-        );
-        water.opacity = 0.5;
-        waterMesh.add( water );
-        waterMesh.rotation.x = - Math.PI * 0.5;
-        waterMesh.position.y += 70;
-        scene.add( waterMesh );
-        growthLowerLevel = waterMesh.position.y + 120;
-        growthUpperLevel = 1241;
+        generateTexture.water(ambientLight);
 
         camera.position.x = -6000;
         camera.position.z = 6900;
