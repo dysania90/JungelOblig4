@@ -71,21 +71,13 @@
     var x, y, z;
     var x2, y2, z2;
     var flag = false;
-    // Probably GenerateMap
-    var groundData, groundMesh, groundTexture, groundMapImage, groundGeometry,
-            mountainData, mountainMesh, mountainTexture, mountainMapImage, mountainGeometry,
-            lavaMesh, lavaTexture,lavaGeometry,
-            beachData, beachMesh, beachTexture, beachMapImage, beachGeometry;
+    var lavaMesh;
     var water;
-    var waterMesh;
-    var frameTime;
-    var angle = 0.0;
     var growthLowerLevel;
     var growthUpperLevel;
-    var waterNormals;
-
-    var worldWidth, worldHeight ,
-            worldHalfWidth, worldHalfHeight;
+    var frameTime;
+    var angle = 0.0;
+    var worldWidth, worldHeight , worldHalfWidth, worldHalfHeight;
     var clock = new THREE.Clock();
 
     window.onload = function() {
@@ -119,7 +111,8 @@
 
         generateTexture.terrain(generateMap);
         generateTexture.mountain(generateMap);
-        generateTexture.lava();
+        lavaMesh = generateTexture.lava();
+        scene.add(lavaMesh);
         generateTexture.beach(generateMap);
         generateTexture.water(ambientLight);
 

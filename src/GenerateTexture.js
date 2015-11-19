@@ -3,7 +3,14 @@
 
 function GenerateTexture() {}
 
+var groundMesh;
+
 GenerateTexture.prototype.terrain = function(generateMap) {
+    var groundMapImage;
+    var groundData;
+    var groundGeometry;
+    var groundTexture;
+
     groundMapImage = document.getElementById('groundmap');
     groundData = generateMap.getPixelValues(groundMapImage, 'r');
     worldWidth = groundMapImage.width;
@@ -23,6 +30,12 @@ GenerateTexture.prototype.terrain = function(generateMap) {
 };
 
 GenerateTexture.prototype.mountain = function(generateMap) {
+    var mountainMapImage;
+    var mountainData;
+    var mountainGeometry;
+    var mountainTexture;
+    var mountainMesh;
+
     mountainMapImage = document.getElementById('mountainmap');
     mountainData = generateMap.getPixelValues(mountainMapImage, 'r');
     mountainGeometry = new HeightMapBufferGeometry(mountainData, worldWidth, worldHeight);
@@ -38,6 +51,10 @@ GenerateTexture.prototype.mountain = function(generateMap) {
 };
 
 GenerateTexture.prototype.lava = function() {
+    var lavaTexture;
+    var lavaGeometry;
+    var lavaMesh;
+
     lavaTexture = THREE.ImageUtils.loadTexture( "textures/lavaTexture.jpg" );
     lavaTexture.wrapS = lavaTexture.wrapT = THREE.RepeatWrapping;
     lavaGeometry = new THREE.CircleGeometry(700, 1000);
@@ -45,10 +62,16 @@ GenerateTexture.prototype.lava = function() {
     lavaMesh.position.set(2457, 3118, -7502);
     lavaMesh.rotation.x = Math.PI /2;
     lavaMesh.name = "lava";
-    scene.add(lavaMesh);
+    return lavaMesh;
 };
 
 GenerateTexture.prototype.beach = function(generateMap) {
+    var beachMapImage;
+    var beachData;
+    var beachGeometry;
+    var beachTexture;
+    var beachMesh;
+
     beachMapImage = document.getElementById('beachmap');
     beachData = generateMap.getPixelValues(beachMapImage, 'r');
     beachGeometry = new HeightMapBufferGeometry(beachData, worldWidth, worldHeight);
@@ -64,6 +87,8 @@ GenerateTexture.prototype.beach = function(generateMap) {
 };
 
 GenerateTexture.prototype.water = function(ambientLight) {
+    var waterNormals;
+    var waterMesh;
     var parameters = {
         width: 2000,
         height: 2000,
@@ -95,7 +120,7 @@ GenerateTexture.prototype.water = function(ambientLight) {
     waterMesh.rotation.x = - Math.PI * 0.5;
     waterMesh.position.y += 70;
     waterMesh.name = "water";
-    scene.add( waterMesh );
     growthLowerLevel = waterMesh.position.y + 120;
     growthUpperLevel = 1241;
+    scene.add(waterMesh);
 };
