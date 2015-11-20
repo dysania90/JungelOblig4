@@ -37,6 +37,7 @@
 <script src="src/SoundFX.js"></script>
 <script src="src/MovementAndCamera.js"></script>
 <script src="src/Renderer.js"></script>
+<script src="src/Lava.js"></script>
 
 <script id="vertex-shader" type="x-shader/x-vertex">
     // Other attributes and uniforms are supposed to be filled in by Three.js
@@ -109,6 +110,7 @@
     var angle = 0.0;
     var worldWidth, worldHeight , worldHalfWidth, worldHalfHeight;
     var clock = new THREE.Clock();
+    var lava;
 
     window.onload = function() {
         init();
@@ -143,6 +145,8 @@
         generateTexture.mountain(generateMap);
         lavaMesh = generateTexture.lava();
         scene.add(lavaMesh);
+        lava = new Lava();
+        lava.initiateLava(lavaMesh);
         generateTexture.beach(generateMap);
         generateTexture.water(ambientLight);
 
@@ -188,6 +192,8 @@
 
     function animate() {
         requestAnimationFrame( animate );
+        lava.updateRain();
+
         angle +=0.00001;
         //dayNightCycle.sunUpdate(angle); 
         water.material.uniforms.time.value += angle;
