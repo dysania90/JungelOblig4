@@ -70,9 +70,8 @@
 
     var container, stats;
     var camera,  controls, scene, renderer, composer;
-
     var flag = false;
-    var shadowsEnabled = false;
+    var shadowsEnabled = true;
     var splineVisible = false;
     var dayNightCycle;
     var lensFlare;
@@ -165,22 +164,17 @@
     function animate() {
         requestAnimationFrame( animate );
         lava.updateRain();
-
         angle +=0.00001;
         //dayNightCycle.sunUpdate(angle); 
         water.material.uniforms.time.value += angle;
         lavaMesh.rotation.z += 0.01;
         //lensFlare.position.set(sunLight.position.x, sunLight.position.y, sunLight.position.z);
-
         render();
         stats.update();
     }
 
     function render() {
-        //        renderer.clear(); //nullstiller alle fargebuffere etc 
         controls.update(clock.getDelta());
-
-
         water.render();
         renderer.render( scene, camera );
     }
