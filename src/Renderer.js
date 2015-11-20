@@ -13,6 +13,7 @@ Renderer.prototype.renderer = function () {
     renderer.setSize( window.innerWidth, window.innerHeight );
     renderer.autoClear = false;
     renderer.shadowMap.enabled = true;
+    renderer.shadowMapSoft = false;
     renderer.shadowMap.type = THREE.PCFSoftShadowMap;
     renderer.shadowDarkness = 1.0;
 
@@ -24,4 +25,8 @@ Renderer.prototype.renderer = function () {
     stats.domElement.style.top = '0px';
 
     container.appendChild( stats.domElement );
+};
+
+Renderer.prototype.rotateLava = function() {
+    lavaMesh.rotation.z += 0.01;
 };

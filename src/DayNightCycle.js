@@ -12,6 +12,22 @@ var light;
 
 DayNightCycle.prototype.sunLight = function() {
     light = new THREE.DirectionalLight(0xf5a914, 2.0); //color of the sun
+
+    if(shadowsEnabled) {
+        light.castShadow = true;
+
+    //////
+        light.shadowCameraVisible = false;
+        light.shadowCameraLeft = -15000;
+        light.shadowCameraRight = 15000;
+        light.shadowCameraTop = 15000;
+        light.shadowCameraBottom = -15000;
+        light.shadowCameraFar = 40000;
+        light.shadowCameraNear = 100;
+        light.shadowMapWidth = 7096;
+        light.shadowMapHeight = 7096
+    }
+    //////
     var lensFlare;
     var flareColor;
     var textureFlare0;
