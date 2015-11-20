@@ -83,7 +83,15 @@ GenerateTexture.prototype.beach = function(generateMap) {
     beachTexture.repeat.set( 64, 64 );
     beachTexture.magFilter = THREE.NearestFilter;
     beachTexture.minFilter = THREE.LinearMipMapLinearFilter;
-    beachMesh = new HeightMapMesh( beachGeometry, new THREE.MeshLambertMaterial({ map: beachTexture }));
+    beachMesh = new HeightMapMesh( beachGeometry, new THREE.MeshLambertMaterial({ map: beachTexture}));/*,
+        polygonOffset: true,
+    depthTest: true,
+    polygonOffsetFactor: 1,
+    polygonOffsetUnits: 0.1,
+        _scene.overrideMaterial: this}));*/
+    //
+
+    //
     beachMesh.name = "beach";
     beachMesh.receiveShadow = true;
     scene.add(beachMesh);

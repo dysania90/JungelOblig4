@@ -70,7 +70,7 @@ Lava.prototype.updateRain = function() {
             particle.y=200;
             particle.velocity.y=0;
         }
-        particleSystem.rotation.y +=0.0005;
+        particleSystem.rotation.y +=0.0001;
         //update the velocity with
         //a splat of randomniz
        // particle.velocity.y-=Math.random()*.1;
