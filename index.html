@@ -85,6 +85,9 @@
     var worldWidth, worldHeight , worldHalfWidth, worldHalfHeight;
     var clock = new THREE.Clock();
     var lava;
+    var generateTexture;
+    var lavaTexture;
+
 
     window.onload = function() {
         init();
@@ -101,14 +104,14 @@
         scene = new THREE.Scene();
         scene.fog = new THREE.FogExp2(0XFFFFFF, 0.0000085);
         controls = new THREE.FirstPersonControls(camera);
-        controls.movementSpeed = 800;
+        controls.movementSpeed = 1400;
         controls.lookSpeed = 0.1;
         var renderer = new Renderer();
         renderer.renderer();
         var generateMap = new GenerateMap();
         dayNightCycle = new DayNightCycle();
         var ambientLight = dayNightCycle.createAmbientLight();
-        var generateTexture = new GenerateTexture();
+        generateTexture = new GenerateTexture();
         scene.add(ambientLight);
 
         generateTexture.terrain(generateMap);
@@ -119,6 +122,8 @@
         lava.initiateLava(lavaMesh);
         generateTexture.beach(generateMap);
         generateTexture.water(ambientLight);
+
+
 
        //position.x = -6000;
         //camera.position.z = 6900;
@@ -138,7 +143,9 @@
         scene.add(dayNightCycle.sunLight());
         scene.add(dayNightCycle.lensFlare());
 
-        generateObjects.billboard();
+        generateObjects.billboard(0);
+        generateObjects.billboard(1);
+        generateObjects.billboard(2);
         generateObjects.palms3D();
         generateObjects.plants3D();
         generateObjects.ship();
@@ -167,7 +174,8 @@
         angle +=0.00001;
         //dayNightCycle.sunUpdate(angle); 
         water.material.uniforms.time.value += angle;
-        lavaMesh.rotation.z += 0.01;
+        //lavaMesh.rotation.z += 0.01;
+        generateTexture.renderLava();
         //lensFlare.position.set(sunLight.position.x, sunLight.position.y, sunLight.position.z);
         render();
         stats.update();

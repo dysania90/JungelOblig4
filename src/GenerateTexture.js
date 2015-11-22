@@ -5,6 +5,7 @@ function GenerateTexture() {}
 
 var groundMesh;
 
+
 GenerateTexture.prototype.terrain = function(generateMap) {
     var groundMapImage;
     var groundData;
@@ -53,7 +54,7 @@ GenerateTexture.prototype.mountain = function(generateMap) {
 };
 
 GenerateTexture.prototype.lava = function() {
-    var lavaTexture;
+
     var lavaGeometry;
     var lavaMesh;
 
@@ -135,4 +136,9 @@ GenerateTexture.prototype.water = function(ambientLight) {
     growthLowerLevel = waterMesh.position.y + 120;
     growthUpperLevel = 1241;
     scene.add(waterMesh);
+};
+
+GenerateTexture.prototype.renderLava = function() {
+    lavaTexture.offset.x += 0.1;
+    lavaTexture.needsUpdate = true;
 };

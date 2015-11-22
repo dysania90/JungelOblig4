@@ -7,6 +7,15 @@ function GenerateObjects () {};
 var MODELS = ['models/palmTrees/palm_straight.obj', 'models/palmTrees/palm_bend.obj',
     'models/palmTrees/palm_dual.obj', 'models/palmTrees/palm_trio.obj',
     'resources/mesh/samples/terrain/plants/tropical_plant2/tropical_plant.obj' ];
+
+
+
+var grassTextureA = THREE.ImageUtils.loadTexture( "models/2Dbillboard/grass01.png" );
+var grassTextureB = THREE.ImageUtils.loadTexture( "models/2Dbillboard/grass02.png" );
+var grassTextureC = THREE.ImageUtils.loadTexture( "models/2Dbillboard/grass03.png" );
+
+var grassTextures = [grassTextureA, grassTextureB, grassTextureC];
+
 var radius;
 var manager = new THREE.LoadingManager();
 manager.onProgress = function ( item, loaded, total ) {
@@ -18,39 +27,57 @@ var loader = new THREE.ImageLoader( manager );
 //      Billboard grass     //
 //////////////////////////////
 
-GenerateObjects.prototype.billboard = function () {
+GenerateObjects.prototype.billboard = function (num) {
 
-    var grassTextureA = THREE.ImageUtils.loadTexture( "models/2Dbillboard/grass01.png" );
-    var grassTextureB = THREE.ImageUtils.loadTexture( "models/2Dbillboard/grass02.png" );
-    var grassTextureC = THREE.ImageUtils.loadTexture( "models/2Dbillboard/grass03.png" );
 
+/*
     var materialA = new THREE.SpriteMaterial( { map: grassTextureA} );
     var materialB = new THREE.SpriteMaterial( { map: grassTextureB} );
-    var materialC = new THREE.SpriteMaterial( { map: grassTextureC} );
+    var materialC = new THREE.SpriteMaterial( { map: grassTextureC} );*/
 
-    var amount = 300;
+    var amount = 3000;
     var radiusA = 5500;
     var j = 0;
 
+    var totalGeometry = new THREE.Geometry();
+    var mat;
+
     for ( var a = 0; a < amount; a ++ ) {
-        if (j == 3) {
+        if (j == 2) {
             j = 0;
         }
+        mat = new THREE.MeshBasicMaterial( { map: grassTextures[num], alphaTest: 0.7, side: THREE.DoubleSide} );
+
         var x = radiusA * (2 * Math.random() - 1);
         var y = radiusA * (2 * Math.random() - 1);
         var z = radiusA * (2 * Math.random() - 1);
 
-        var material = [materialA.clone(), materialB.clone(), materialC.clone()];
+/*        var material = [materialA.clone(), materialB.clone(), materialC.clone()];
 
-        var sprite = new THREE.Sprite( material[j] );
+        var sprite = new THREE.Sprite( material[j] );*/
 
-        sprite.position.set( x, y, z );
-        sprite.position.y = groundMesh.getHeightAtPoint(sprite.position) + 100;
-        sprite.scale.set(256,256,1.0);
 
-        groundMesh.add(sprite);
+        var geom = new THREE.PlaneGeometry( 300, 300 );
+        var mesh = new THREE.Mesh( geom, mat );
+
+        mesh.position.set( x, y, z );
+        mesh.position.y = groundMesh.getHeightAtPoint(mesh.position) + 100;
+
+        var mesh2 = new THREE.Mesh(geom, mat);
+        mesh2.position.set(x,mesh.position.y,z);
+        mesh2.rotation.y =- Math.PI * 0.5;
+
+        mesh.updateMatrix();
+        mesh2.updateMatrix();
+
+        totalGeometry.merge(mesh.geometry, mesh.matrix);
+        totalGeometry.merge(mesh2.geometry, mesh2.matrix);
+
+
         j++;
     }
+    var total = new THREE.Mesh(totalGeometry, mat);
+    groundMesh.add(total);
 
 };
 

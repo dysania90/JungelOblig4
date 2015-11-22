@@ -99,7 +99,7 @@ DayNightCycle.prototype.skybox = function () {
     // create skybox mesh
     skyBox = new THREE.Mesh(new THREE.BoxGeometry(300000, 400000, 300000), mat);
     skyBox.doubleSided = true;
-    groundMesh.add(skyBox);
+    scene.add(skyBox);
 };
 
 DayNightCycle.prototype.createAmbientLight = function () {
